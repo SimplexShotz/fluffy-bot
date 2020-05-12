@@ -151,9 +151,7 @@ client.on('message', async message => {
       m = "Account disconnected.";
     break;
     case "test":
-      message.author.setNickname({
-        nick: "testststtte"
-      });
+      message.member.setNickname("testststtte");
       m = "haha";
     break;
   }
