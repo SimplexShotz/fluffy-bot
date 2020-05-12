@@ -115,9 +115,7 @@ client.on('message', async message => {
                   // Save the body response:
                   ref.users.child(message.author.id).child("saved").set(body);
                   // Set their username:
-                  message.author.setNickname({
-                    nick: body.name
-                  });
+                  message.member.setNickname(body.name);
                   message.channel.send({embed: {
                     color: 16777215, // TODO: "If this is incorrect, please type !disconnect"
                     description: `You are now connected as ${body.name}!`
