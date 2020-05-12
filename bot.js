@@ -98,7 +98,10 @@ client.on('message', async message => {
         ref.users.once("value", function(data) {
           var d = data.val();
           if (d[message.author.id]) {
-            m = `You've already connected your account as ${d[message.author.id].saved.name}. To disconnect your account, use the "!disconnect" command.`;
+            message.channel.send({embed: {
+              color: 16777215,
+              description: `You've already connected your account as ${d[message.author.id].saved.name}. To disconnect your account, use the "!disconnect" command.`
+            }});
           } else {
             ref.users.child(message.author.id).set({
               tag: args[0],
