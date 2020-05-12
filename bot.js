@@ -110,10 +110,11 @@ client.on('message', async message => {
           uri: "https://api.clashofclans.com/v1/players/%23" + args[0]
         }, function(err, res, body) {
           console.log(res.statusCode);
+          body = JSON.parse(body);
           console.log(body);
           message.channel.send({embed: {
-            color: 16777215,
-            description: body.name || "Uh oh! Something went wrong."
+            color: 16777215, // TODO: "If this is incorrect, please type !disconnect"
+            description: `You are now connected as ${body.name}!` || "Uh oh! Something went wrong."
           }});
         });
         m = "Connecting you to your Clash of Clans account...";
