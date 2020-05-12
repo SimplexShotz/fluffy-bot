@@ -36,7 +36,7 @@ var commands = {
   },
   connect: {
     info: "Connect your Discord account to your Clash of Clans account.",
-    arguments: [["Player Tag"]]
+    arguments: [["player tag"]]
   },
   disconnect: {
     info: "Disconnect your Discord account from your Clash of Clans account.",
