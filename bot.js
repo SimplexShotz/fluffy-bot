@@ -99,7 +99,7 @@ client.on('message', async message => {
           tag: args[0],
           currency: 100,
           saved: {
-            username: false
+            exists: true
           }
         });
         fixieRequest({
@@ -111,6 +111,7 @@ client.on('message', async message => {
         }, function(err, res, body) {
           console.log(res.statusCode);
           body = JSON.parse(body);
+          ref.users.child(message.author.id).child("saved").set(body);
           console.log(body);
           message.channel.send({embed: {
             color: 16777215, // TODO: "If this is incorrect, please type !disconnect"
