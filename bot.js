@@ -135,7 +135,7 @@ client.on('message', async message => {
             m = "Connecting you to your Clash of Clans account...";
           }
         });
-      } else if (args[0].charAt(0) !== "#") {
+      } else if (args[0] && args[0].charAt(0) !== "#") {
         m = `Your player tag must start with a "#". The command should look something like this:\n!connect #CULL88OG`
       } else {
         m = `You must include your player tag. The command should look something like this:\n!connect #CULL88OG`;
