@@ -41,7 +41,7 @@ var roles = {
 
 client.on('message', async message => {
   // Setup roles:
-  console.log(message.guild);
+  console.log(message.guild.roles.cache.find(role => role.name === "Member"));
   if (!roles.setup) {
     roles = {
       setup: true,
