@@ -21,6 +21,9 @@ var ref = {
   users: database.ref("users")
 };
 
+var ip = require('ip');
+console.log(ip.address());
+
 // Setup Request:
 const request = require("request");
 
