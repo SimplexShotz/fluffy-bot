@@ -35,8 +35,22 @@ var commands = {
     arguments: [[false, "command name"]]
   }
 };
+var roles = {
+  setup: false
+};
 
 client.on('message', async message => {
+  // Setup roles:
+  if (!roles.setup) {
+    roles = {
+      setup: true,
+      member: message.guild.roles.find(role => role.name === "Member"),
+      elder: message.guild.roles.find(role => role.name === "Elder"),
+      coleader: message.guild.roles.find(role => role.name === "Co-Leader"),
+      leader: message.guild.roles.find(role => role.name === "Leader")
+    };
+  }
+
   // If the message was from the bot, or the message did not start with "!":
   if (message.author.id === client.user.id || message.content.substring(0, 1) !== "!") {
     return;
@@ -149,9 +163,8 @@ client.on('message', async message => {
       m = "Account disconnected.";
     break;
     case "test":
-      console.log(message.member);
-      message.member.setNickname("testststtte");
-      m = "haha";
+      message.member.addRole(roles.leader);
+      m = "Test complete.";
     break;
   }
 
