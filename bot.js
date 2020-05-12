@@ -33,8 +33,8 @@ client.on('message', async message => {
         help = `**Help Menu**\n`;
         // Print all commands:
         for (var i in commands) {
-          // += "__help__"
-          help += `__${i}:__\n${commands[i].info}\n\n`;
+          // += "__!help:__ Shows all commands or the usage of a specific command."
+          help += `__!${i}:__\n${commands[i].info}\n\n`;
         }
         help += `_Pro tip: Use !help (command) for command usage_`;
         m = help;
