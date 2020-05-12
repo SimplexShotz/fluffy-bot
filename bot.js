@@ -41,14 +41,13 @@ var roles = {
 
 client.on('message', async message => {
   // Setup roles:
-  console.log(message.guild.roles.cache.find(role => role.name === "Member"));
   if (!roles.setup) {
     roles = {
       setup: true,
-      // member: message.guild.roles.find(role => role.name === "Member"),
-      // elder: message.guild.roles.find(role => role.name === "Elder"),
-      // coleader: message.guild.roles.find(role => role.name === "Co-Leader"),
-      // leader: message.guild.roles.find(role => role.name === "Leader")
+      member: message.guild.roles.cache.find(role => role.name === "Member"),
+      elder: message.guild.roles.cache.find(role => role.name === "Elder"),
+      coleader: message.guild.roles.cache.find(role => role.name === "Co-Leader"),
+      leader: message.guild.roles.cache.find(role => role.name === "Leader")
     };
   }
 
