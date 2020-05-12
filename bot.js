@@ -103,7 +103,7 @@ client.on('message', async message => {
         });
         request({
           headers: {
-            "Authorization": "Basic " + process.env.API_TOKEN,
+            "Authorization": "Bearer " + process.env.API_TOKEN,
           },
           uri: "https://api.clashofclans.com/v1/players/" + args[0]
         }, function(err, res, body) {
