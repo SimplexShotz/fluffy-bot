@@ -126,12 +126,12 @@ client.on('message', async message => {
               console.log(res.statusCode);
               if (res.statusCode === 200) { // Successful
                 if (body.name) { // Account exists
-                  // Save the body response:
-                  ref.users.child(message.author.id).child("saved").set(body);
-                  // Set their username:
-                  message.member.setNickname(body.name);
-                  // Set their role (if they are in the clan):
-                  if (body.clan.tag === "#22P998QP0") {
+                  if (body.clan.tag === "#22P998QP0") { // In clan:
+                    // Save the body response:
+                    ref.users.child(message.author.id).child("saved").set(body);
+                    // Set their username:
+                    message.member.setNickname(body.name + "[" + body.townHallLevel + "]");
+                    // Set their role:
                     switch(body.role) {
                       case "member":
                         message.member.roles.add(roles.member);
@@ -146,12 +146,18 @@ client.on('message', async message => {
                         message.member.roles.add(roles.leader);
                       break;
                     }
+                    // Confirm connection:
+                    message.channel.send({embed: {
+                      color: 16777215,
+                      description: `You are now connected as ${body.name}! If this is incorrect, please type "!disconnect".`
+                    }});
+                  } else { // NOT in clan:
+                    ref.users.child(message.author.id).set(false);
+                    message.channel.send({embed: {
+                      color: 16777215,
+                      description: `You must join the clan first!`
+                    }});
                   }
-                  // Confirm connection:
-                  message.channel.send({embed: {
-                    color: 16777215,
-                    description: `You are now connected as ${body.name}! If this is incorrect, please type "!disconnect".`
-                  }});
                 } else { // Account does not exist
                   ref.users.child(message.author.id).set(false);
                   message.channel.send({embed: {
@@ -197,7 +203,17 @@ client.on('message', async message => {
   }
 });
 
+function updateClan() {
+  fixieRequest({
+    headers: {
+      Accept: "application/json",
+      authorization: `Bearer ${process.env.API_TOKEN}`
+    },
+    uri: "https://api.clashofclans.com/v1/players/%23" + args[0].substring(1, args[0].length)
+  }, function(err, res, body) {
 
+  });
+}
 
 // start bot
 client.login(process.env.BOT_TOKEN); //BOT_TOKEN is the Client Secret
