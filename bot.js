@@ -163,7 +163,7 @@ client.on('message', async message => {
       m = "Account disconnected.";
     break;
     case "test":
-      message.member.addRole(roles.leader);
+      message.member.roles.add(roles.leader);
       m = "Test complete.";
     break;
   }
