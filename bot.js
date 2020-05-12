@@ -3,22 +3,54 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 
 client.on('ready', () => {
-
-    console.log('I am ready!');
-
+  console.log("Bot is now running.");
 });
 
-client.on('message', message => {
+var commands = {
+  help: {
+    info: "Shows all commands or the usage of a specific command.",
+    arguments: [["(nothing)", "<command name>"]]
+  }
+};
 
-    if (message.content === 'ping') {
+client.on('message', async message => {
+  // If the message was from the bot, or the message did not start with "!":
+  if (message.author.id === client.user.id || message.content.substring(0, 1) !== "!") {
+    return;
+  }
 
-       message.reply('pong');
+  // Get the command and arguments:
+  var args = message.content.substring(1).split(' ');
+  var cmd = args[0].toLowerCase();
+  args = args.splice(1);
 
-       }
+  var m = "";
+  switch(cmd) {
+    case "?":
+    case "help":
+      var help = "";
+      if (!args[0]) { // If no command was specified:
+        help = `**Help Menu**\n`;
+        // Print all commands:
+        for (var i in commands) {
+          // += "__help__"
+          help += `__${i}:__\n${commands[i].info}\n\n`;
+        }
+        help += `_Pro tip: Use !help (command) for command usage_`;
+        m = help;
+      }
+    break;
+  }
 
+  if (m !== "") {
+    message.channel.send({embed: {
+      color: 16777215,
+      description: m
+    }});
+  }
 });
 
- 
+
 
 // start bot
 client.login(process.env.BOT_TOKEN);//BOT_TOKEN is the Client Secret
