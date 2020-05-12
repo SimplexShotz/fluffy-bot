@@ -1,6 +1,28 @@
 
-const Discord = require('discord.js');
+// Setup Discord:
+const Discord = require("discord.js");
 const client = new Discord.Client();
+
+// Setup Firebase:
+const firebase = require("firebase");
+var firebaseConfig = {
+  apiKey: "AIzaSyBgfiB26cap_PUCxwqIa8m0xPDqtrfXt5Q",
+  authDomain: "ss-fluffy-bot.firebaseapp.com",
+  databaseURL: "https://ss-fluffy-bot.firebaseio.com",
+  projectId: "ss-fluffy-bot",
+  storageBucket: "ss-fluffy-bot.appspot.com",
+  messagingSenderId: "461874496304",
+  appId: "1:461874496304:web:1375790da9e30654547ef5"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+var database = firebase.database();
+var ref = {
+  users: database.ref("users")
+};
+
+// Setup Request:
+const request = require("request");
 
 client.on('ready', () => {
   console.log("Bot is now running.");
@@ -60,6 +82,21 @@ client.on('message', async message => {
       }
       m = help;
     break;
+    case "connect":
+      if (args[0]) { // If player tag was specified
+        ref.users.child(message.author.id).set({
+          tag: args[0],
+          currency: 100,
+          saved: {
+            username: false
+          }
+        });
+        request("https://api.clashofclans.com/v1/players/" + args[0], function(err, res, body) {
+          console.log(res.statusCode);
+        });
+      } else {
+        m = "You must include your player tag. The command should look something like this:\n!connect #CULL88OG";
+      }
   }
 
   if (m !== "") {
