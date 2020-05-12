@@ -33,6 +33,7 @@ const publicIp = require('public-ip');
 
 // Setup Request:
 const request = require("request");
+const fixieRequest = request.defaults({'proxy': process.env.FIXIE_URL});
 
 client.on('ready', () => {
   console.log("Bot is now running.");
@@ -101,7 +102,7 @@ client.on('message', async message => {
             username: false
           }
         });
-        request({
+        fixieRequest({
           headers: {
             Accept: "application/json",
             authorization: `Bearer ${process.env.API_TOKEN}`
