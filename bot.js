@@ -101,13 +101,14 @@ client.on('message', async message => {
             username: false
           }
         });
-        request("https://www.whatsmyip.org/", function(err, res, body) {
+        request({
+          headers: {
+            "Authorization": "Bearer " + process.env.API_TOKEN,
+          },
+          uri: "https://api.clashofclans.com/v1/players/" + args[0]
+        }, function(err, res, body) {
           console.log(res.statusCode);
-          console.log(body);
         });
-        // request("https://api.clashofclans.com/v1/players/" + args[0], function(err, res, body) {
-        //   console.log(res.statusCode);
-        // });
         m = "Connecting you to your Clash of Clans account...";
       } else {
         m = "You must include your player tag. The command should look something like this:\n!connect #CULL88OG";
