@@ -130,9 +130,27 @@ client.on('message', async message => {
                   ref.users.child(message.author.id).child("saved").set(body);
                   // Set their username:
                   message.member.setNickname(body.name);
+                  // Set their role (if they are in the clan):
+                  if (body.clan.tag === "#22P998QP0") {
+                    switch(body.role) {
+                      case "member":
+                        message.member.roles.add(roles.member);
+                      break;
+                      case "admin": // elder
+                        message.member.roles.add(roles.elder);
+                      break;
+                      case "coLeader":
+                        message.member.roles.add(roles.coleader);
+                      break;
+                      case "leader":
+                        message.member.roles.add(roles.leader);
+                      break;
+                    }
+                  }
+                  // Confirm connection:
                   message.channel.send({embed: {
-                    color: 16777215, // TODO: "If this is incorrect, please type !disconnect"
-                    description: `You are now connected as ${body.name}!`
+                    color: 16777215,
+                    description: `You are now connected as ${body.name}! If this is incorrect, please type "!disconnect".`
                   }});
                 } else { // Account does not exist
                   ref.users.child(message.author.id).set(false);
@@ -163,8 +181,11 @@ client.on('message', async message => {
       m = "Account disconnected.";
     break;
     case "test":
-      message.member.roles.add(roles.leader);
+      // message.member.roles.add(roles.leader);
       m = "Test complete.";
+    break;
+    default:
+      m = `That command does not exist! Use "!help" for help.`;
     break;
   }
 
