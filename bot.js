@@ -33,6 +33,14 @@ var commands = {
   help: {
     info: "Shows all commands or the usage of a specific command.",
     arguments: [[false, "command name"]]
+  },
+  connect: {
+    info: "Connect your Discord account to your Clash of Clans account.",
+    arguments: [["Player Tag"]]
+  },
+  disconnect: {
+    info: "Disconnect your Discord account from your Clash of Clans account.",
+    arguments: false
   }
 };
 var roles = {
