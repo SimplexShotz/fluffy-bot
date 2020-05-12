@@ -21,16 +21,6 @@ var ref = {
   users: database.ref("users")
 };
 
-const publicIp = require('public-ip');
-
-(async () => {
-    console.log(await publicIp.v4());
-    //=> '46.5.21.123'
-
-    console.log(await publicIp.v6());
-    //=> 'fe80::200:f8ff:fe21:67cf'
-})();
-
 // Setup Request:
 const request = require("request");
 const fixieRequest = request.defaults({'proxy': process.env.FIXIE_URL});
@@ -148,6 +138,11 @@ client.on('message', async message => {
       } else {
         m = `You must include your player tag. The command should look something like this:\n!connect #CULL88OG`;
       }
+    break;
+    case "disconnect":
+      ref.users.child(message.author.id).set(false);
+      m = "Account disconnected.";
+    break;
   }
 
   if (m !== "") {
