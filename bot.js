@@ -9,7 +9,7 @@ client.on('ready', () => {
 var commands = {
   help: {
     info: "Shows all commands or the usage of a specific command.",
-    arguments: [[false, "<command name>"]]
+    arguments: [[false, "command name"]]
   }
 };
 
