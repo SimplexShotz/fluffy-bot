@@ -151,6 +151,7 @@ client.on('message', async message => {
       m = "Account disconnected.";
     break;
     case "test":
+      console.log(message.member);
       message.member.setNickname("testststtte");
       m = "haha";
     break;
