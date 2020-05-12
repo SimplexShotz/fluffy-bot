@@ -110,6 +110,10 @@ client.on('message', async message => {
         }, function(err, res, body) {
           console.log(res.statusCode);
           console.log(body);
+          message.channel.send({embed: {
+            color: 16777215,
+            description: body.name || "Uh oh! Something went wrong."
+          }});
         });
         m = "Connecting you to your Clash of Clans account...";
       } else {
