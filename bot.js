@@ -94,33 +94,56 @@ client.on('message', async message => {
       m = help;
     break;
     case "connect":
-      if (args[0]) { // If player tag was specified
-        ref.users.child(message.author.id).set({
-          tag: args[0],
-          currency: 100,
-          saved: {
-            exists: true
+      if (args[0] && args[0].charAt(0) === "#") { // If player tag was specified
+        ref.users.once("value", function(data) {
+          var d = data.val();
+          if (d[message.author.id]) {
+            m = `You've already connected your account as ${d[message.author.id].saved.name}. To disconnect your account, use the "!disconnect" command.`;
+          } else {
+            ref.users.child(message.author.id).set({
+              tag: args[0],
+              currency: 100,
+              saved: {
+                waiting: true
+              }
+            });
+            fixieRequest({
+              headers: {
+                Accept: "application/json",
+                authorization: `Bearer ${process.env.API_TOKEN}`
+              },
+              uri: "https://api.clashofclans.com/v1/players/%23" + args[0].substring(1, str.length)
+            }, function(err, res, body) {
+              body = JSON.parse(body);
+              if (res.statusCode === 200) { // Successful
+                if (body.name) { // Account exists
+                  ref.users.child(message.author.id).child("saved").set(body);
+                  message.channel.send({embed: {
+                    color: 16777215, // TODO: "If this is incorrect, please type !disconnect"
+                    description: `You are now connected as ${body.name}!`
+                  }});
+                } else { // Account does not exist
+                  ref.users.child(message.author.id).set(false);
+                  message.channel.send({embed: {
+                    color: 16777215,
+                    description: `That user does not exist.`
+                  }});
+                }
+              } else { // Unsuccessful
+                ref.users.child(message.author.id).set(false);
+                message.channel.send({embed: {
+                  color: 16777215,
+                  description: `There was an error: ${body}`
+                }});
+              }
+            });
+            m = "Connecting you to your Clash of Clans account...";
           }
         });
-        fixieRequest({
-          headers: {
-            Accept: "application/json",
-            authorization: `Bearer ${process.env.API_TOKEN}`
-          },
-          uri: "https://api.clashofclans.com/v1/players/%23" + args[0]
-        }, function(err, res, body) {
-          console.log(res.statusCode);
-          body = JSON.parse(body);
-          ref.users.child(message.author.id).child("saved").set(body);
-          console.log(body);
-          message.channel.send({embed: {
-            color: 16777215, // TODO: "If this is incorrect, please type !disconnect"
-            description: `You are now connected as ${body.name}!` || "Uh oh! Something went wrong."
-          }});
-        });
-        m = "Connecting you to your Clash of Clans account...";
+      } else if (args[0].charAt(0) !== "#") {
+        m = `Your player tag must start with a "#". The command should look something like this:\n!connect #CULL88OG`
       } else {
-        m = "You must include your player tag. The command should look something like this:\n!connect CULL88OG";
+        m = `You must include your player tag. The command should look something like this:\n!connect #CULL88OG`;
       }
   }
 
