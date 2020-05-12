@@ -103,7 +103,8 @@ client.on('message', async message => {
         });
         request({
           headers: {
-            "Authorization": "Bearer " + process.env.API_TOKEN,
+            Accept: "application/json",
+            authorization: `Bearer ${process.env.API_TOKEN}`
           },
           uri: "https://api.clashofclans.com/v1/players/" + args[0]
         }, function(err, res, body) {
