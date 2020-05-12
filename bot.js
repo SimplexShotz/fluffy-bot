@@ -112,7 +112,12 @@ client.on('message', async message => {
               console.log(res.statusCode);
               if (res.statusCode === 200) { // Successful
                 if (body.name) { // Account exists
+                  // Save the body response:
                   ref.users.child(message.author.id).child("saved").set(body);
+                  // Set their username:
+                  message.author.setNickname({
+                    nick: body.name
+                  });
                   message.channel.send({embed: {
                     color: 16777215, // TODO: "If this is incorrect, please type !disconnect"
                     description: `You are now connected as ${body.name}!`
@@ -144,6 +149,12 @@ client.on('message', async message => {
     case "disconnect":
       ref.users.child(message.author.id).set(false);
       m = "Account disconnected.";
+    break;
+    case "test":
+      message.author.setNickname({
+        nick: "testststtte"
+      });
+      m = "haha";
     break;
   }
 
