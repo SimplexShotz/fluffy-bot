@@ -138,7 +138,7 @@ client.on('message', async message => {
                     // Save the body response:
                     ref.users.child(message.author.id).child("saved").set(body);
                     // Set their username:
-                    message.member.setNickname(body.name + "[" + body.townHallLevel + "]");
+                    message.member.setNickname(body.name + " [" + body.townHallLevel + "]");
                     // Set their role:
                     switch(body.role) {
                       case "member":
