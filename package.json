@@ -20,6 +20,7 @@
   "dependencies": {
     "discord.js": "^12.2.0",
     "firebase": "^7.14.3",
+    "ip": "^1.1.5",
     "request": "^2.88.2"
   },
   "engines": {
