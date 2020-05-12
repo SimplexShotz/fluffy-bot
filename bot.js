@@ -106,14 +106,14 @@ client.on('message', async message => {
             Accept: "application/json",
             authorization: `Bearer ${process.env.API_TOKEN}`
           },
-          uri: "https://api.clashofclans.com/v1/players/" + args[0]
+          uri: "https://api.clashofclans.com/v1/players/%23" + args[0]
         }, function(err, res, body) {
           console.log(res.statusCode);
           console.log(body);
         });
         m = "Connecting you to your Clash of Clans account...";
       } else {
-        m = "You must include your player tag. The command should look something like this:\n!connect #CULL88OG";
+        m = "You must include your player tag. The command should look something like this:\n!connect CULL88OG";
       }
   }
 
