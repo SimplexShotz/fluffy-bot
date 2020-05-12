@@ -108,6 +108,8 @@ client.on('message', async message => {
               uri: "https://api.clashofclans.com/v1/players/%23" + args[0].substring(1, str.length)
             }, function(err, res, body) {
               body = JSON.parse(body);
+              console.log(body);
+              console.log(res.statusCode);
               if (res.statusCode === 200) { // Successful
                 if (body.name) { // Account exists
                   ref.users.child(message.author.id).child("saved").set(body);
