@@ -9,7 +9,7 @@ client.on('ready', () => {
 var commands = {
   help: {
     info: "Shows all commands or the usage of a specific command.",
-    arguments: [["(nothing)", "<command name>"]]
+    arguments: [[false, "<command name>"]]
   }
 };
 
@@ -36,9 +36,29 @@ client.on('message', async message => {
           // += "__!help:__ Shows all commands or the usage of a specific command."
           help += `__!${i}:__\n${commands[i].info}\n\n`;
         }
-        help += `_Pro tip: Use !help (command) for command usage_`;
-        m = help;
+        help += `_Pro tip: Use "!help <command>" for command usage_`;
+      } else { // Command was specified:
+        if (commands[args[0].toLowerCase()]) { // Commmand exists:
+          help = `**!${args[0].toLowerCase()}:**\n`;
+          help += `${commands[args[0].toLowerCase()].info}\n\n`;
+          help += `**Usage:**\n`;
+          help += `!${args[0].toLowerCase()} `;
+          for (var arg = 0, arguments = commands[args[0].toLowerCase()].arguments; arg < arguments.length; arg++) {
+            for (var opt = 0, options = arguments[arg]; opt < options.length; opt++) {
+              help += options[opt] ? `<${options[opt]}>` : `(nothing)`;
+              if (opt !== options.length - 1) {
+                help += "/";
+              }
+            }
+            if (arg !== arguments.length - 1) {
+              help += " ";
+            }
+          }
+        } else { // Command does not exist:
+          help = "**Error:**\nThat command does not exist.";
+        }
       }
+      m = help;
     break;
   }
 
