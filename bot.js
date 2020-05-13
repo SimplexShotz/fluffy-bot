@@ -194,6 +194,26 @@ client.on('message', async message => {
       ref.users.child(message.author.id).set(false);
       m = "Account disconnected.";
     break;
+    case "delete":
+      if (message.member.roles.find(role => role.name === "Leader")) {
+        if (args[0] === undefined) {
+          args[0] = "1";
+        }
+        var deleteCount = parseInt(args[0], 10) + 1;
+        if (deleteCount > 1 && deleteCount <= 11) {
+          // Get the messages
+          var fetched = await message.channel.fetchMessages({
+            limit: deleteCount
+          });
+          // Delete the messages
+          await message.channel.bulkDelete(fetched);
+        } else {
+          m = "The number of items to delete must be between 1 and 10.";
+        }
+      } else {
+        m = "You can't do that!";
+      }
+    break;
     case "test":
       // message.member.roles.add(roles.leader);
       m = "Test complete.";
