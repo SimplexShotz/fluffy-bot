@@ -202,7 +202,7 @@ client.on('message', async message => {
         var deleteCount = parseInt(args[0], 10) + 1;
         if (deleteCount > 1 && deleteCount <= 11) {
           // Get the messages
-          var fetched = await message.channel.fetchMessages({
+          var fetched = await message.channel.messages.fetch({
             limit: deleteCount
           });
           // Delete the messages
