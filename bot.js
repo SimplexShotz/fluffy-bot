@@ -214,8 +214,34 @@ client.on('message', async message => {
         m = "You can't do that!";
       }
     break;
+    case "wallet":
+      switch(args[0]) {
+        case "give":
+        case "send":
+
+        break;
+        case "value":
+        default: // Get currency:
+          ref.users.once("value", function(data) {
+            var d = data.val();
+            if (d[message.author.id]) {
+              message.channel.send({embed: {
+                color: 16777215,
+                description: `You currently have $${d[message.author.id].currency}.`
+              }});
+            } else {
+              message.channel.send({embed: {
+                color: 16777215,
+                description: `You don't have an account! Use "!connect <player tag>" to make one.`
+              }});
+            }
+          });
+        break;
+      }
+    break;
     case "test":
       // message.member.roles.add(roles.leader);
+      console.log(args);
       m = "Test complete.";
     break;
     default:
