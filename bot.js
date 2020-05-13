@@ -226,9 +226,9 @@ client.on('message', async message => {
               if (d[message.author.id] && d[other]) { // Both have an account
                 if (d[message.author.id].currency >= cash) { // Has enough funds
                   // Subtract from their funds:
-                  ref.users.child(message.author.id).child("currency").set(d[message.author.id].currency - cash);
+                  ref.users.child(message.author.id).child("currency").set(Math.round((d[message.author.id].currency - cash) * 100) / 100);
                   // Add to other person's funds:
-                  ref.users.child(other).child("currency").set(d[other].currency + cash);
+                  ref.users.child(other).child("currency").set(Math.round((d[other].currency + cash) * 100) / 100);
                   message.channel.send({embed: {
                     color: 16777215,
                     description: `<@!${message.author.id}> gave $${args[2]} to <@!${other}>. Use "!wallet" to see how much money you now have.`
