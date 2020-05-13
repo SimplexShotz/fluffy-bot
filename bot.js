@@ -228,7 +228,7 @@ client.on('message', async message => {
             }
             quicksort(money, 0, money.length - 1, "money");
             var topList = "**Wallet Leaderboard**\n";
-            for (var i = 0; i < money.length; i++) {
+            for (var i = 0; i < Math.min(money.length, 10); i++) {
               topList += `${(i + 1)}. ${money[i].user}: *$${money[i].money}*\n`;
             }
             message.channel.send({embed: {
