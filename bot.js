@@ -18,7 +18,8 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 var ref = {
-  users: database.ref("users")
+  users: database.ref("users"),
+  time: database.ref("time")
 };
 
 // Setup Request:
@@ -362,6 +363,20 @@ function quicksort(arr, lo, hi, by) {
     quicksort(arr, p + 1, hi, by);
   }
 }
+
+setInterval(function() {
+  ref.time.once("value", function(data) {
+    var time = data.val();
+    if (time >= 360) { // 1/4 of a day
+      // TODO update clan + war status
+      // Reset time:
+      ref.time.set(0);
+    } else {
+      // Increment time:
+      ref.time.set(time + 1);
+    }
+  });
+}, 60 * 1000);
 
 // start bot
 client.login(process.env.BOT_TOKEN); //BOT_TOKEN is the Client Secret
