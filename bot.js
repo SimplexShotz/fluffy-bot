@@ -225,14 +225,15 @@ client.on('message', async message => {
               var d = data.val();
               if (d[message.author.id] && d[other]) { // Both have an account
                 if (d[message.author.id].currency >= cash) { // Has enough funds
+                  // Send message first
+                  message.channel.send({embed: {
+                    color: 16777215,
+                    description: `<@!${message.author.id}> gave $${cash} to <@!${other}>.\n<@!${message.author.id}> now has $${Math.round((d[message.author.id].currency - cash) * 100) / 100}.\n<@!${other}> now has $${Math.round((d[other].currency + cash) * 100) / 100}.\n`
+                  }});
                   // Subtract from their funds:
                   ref.users.child(message.author.id).child("currency").set(Math.round((d[message.author.id].currency - cash) * 100) / 100);
                   // Add to other person's funds:
                   ref.users.child(other).child("currency").set(Math.round((d[other].currency + cash) * 100) / 100);
-                  message.channel.send({embed: {
-                    color: 16777215,
-                    description: `<@!${message.author.id}> gave $${cash} to <@!${other}>.\n<@!${message.author.id}> now has $${d[message.author.id].currency}.\n<@!${other}> now has $${d[other].currency}.\n`
-                  }});
                 } else { // Not enough funds
                   message.channel.send({embed: {
                     color: 16777215,
