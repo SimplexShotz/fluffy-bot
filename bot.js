@@ -195,7 +195,7 @@ client.on('message', async message => {
       m = "Account disconnected.";
     break;
     case "delete":
-      if (message.member.roles.find(role => role.name === "Leader")) {
+      if (message.member.roles.cache.find(role => role.name === "Leader")) {
         if (args[0] === undefined) {
           args[0] = "1";
         }
