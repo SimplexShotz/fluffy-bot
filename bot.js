@@ -198,6 +198,9 @@ client.on('message', async message => {
       ref.users.child(user).set(false);
       if (user !== 268131125279457280) { // Bot cannot change nickname/role of server owner
         // Remove all roles and nickname:
+        console.log(user);
+        console.log(message.guild.members.fetch(user));
+        console.log(message.guild.members.fetch(user).roles);
         message.guild.members.fetch(user).roles.set([]);
         message.guild.members.fetch(user).setNickname("");
       }
