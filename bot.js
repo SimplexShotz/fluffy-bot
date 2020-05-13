@@ -140,20 +140,21 @@ client.on('message', async message => {
                     ref.users.child(user).child("saved").set(body);
                     if (body.tag !== "#CULL88OG") { // Bot cannot change nickname/role of server owner
                       // Set their username:
-                      message.guild.members.fetch(user).setNickname(body.name + " [" + body.townHallLevel + "]");
+                      var u = await message.guild.members.fetch(user);
+                      u.setNickname(body.name + " [" + body.townHallLevel + "]");
                       // Set their role:
                       switch(body.role) {
                         case "member":
-                          message.guild.members.fetch(user).roles.add(roles.member);
+                          u.roles.add(roles.member);
                         break;
                         case "admin": // elder
-                          message.guild.members.fetch(user).roles.add(roles.elder);
+                          u.roles.add(roles.elder);
                         break;
                         case "coLeader":
-                          message.guild.members.fetch(user).roles.add(roles.coleader);
+                          u.roles.add(roles.coleader);
                         break;
                         case "leader":
-                          message.guild.members.fetch(user).roles.add(roles.leader);
+                          u.roles.add(roles.leader);
                         break;
                       }
                     }
@@ -198,11 +199,9 @@ client.on('message', async message => {
       ref.users.child(user).set(false);
       if (user !== 268131125279457280) { // Bot cannot change nickname/role of server owner
         // Remove all roles and nickname:
-        console.log(user);
-        console.log(message.guild.members.fetch(user));
-        console.log(message.guild.members.fetch(user).roles);
-        message.guild.members.fetch(user).roles.set([]);
-        message.guild.members.fetch(user).setNickname("");
+        var u = await message.guild.members.fetch(user);
+        u.roles.set([]);
+        u.setNickname("");
       }
       m = "Account disconnected.";
     break;
