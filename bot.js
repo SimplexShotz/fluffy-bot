@@ -235,7 +235,7 @@ client.on('message', async message => {
                 } else { // Not enough funds
                   message.channel.send({embed: {
                     color: 16777215,
-                    description: `You don't have enough money! You currently have ${d[message.author.id].currency}.`
+                    description: `You don't have enough money! You currently have $${d[message.author.id].currency}.`
                   }});
                 }
               } else if (d[other]) { // They do not have an account
