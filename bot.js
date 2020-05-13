@@ -140,20 +140,20 @@ client.on('message', async message => {
                     ref.users.child(user).child("saved").set(body);
                     if (body.tag !== "#CULL88OG") { // Bot cannot change nickname/role of server owner
                       // Set their username:
-                      message.guild.members.get(user).setNickname(body.name + " [" + body.townHallLevel + "]");
+                      message.guild.members.fetch(user).setNickname(body.name + " [" + body.townHallLevel + "]");
                       // Set their role:
                       switch(body.role) {
                         case "member":
-                          message.guild.members.get(user).roles.add(roles.member);
+                          message.guild.members.fetch(user).roles.add(roles.member);
                         break;
                         case "admin": // elder
-                          message.guild.members.get(user).roles.add(roles.elder);
+                          message.guild.members.fetch(user).roles.add(roles.elder);
                         break;
                         case "coLeader":
-                          message.guild.members.get(user).roles.add(roles.coleader);
+                          message.guild.members.fetch(user).roles.add(roles.coleader);
                         break;
                         case "leader":
-                          message.guild.members.get(user).roles.add(roles.leader);
+                          message.guild.members.fetch(user).roles.add(roles.leader);
                         break;
                       }
                     }
@@ -196,6 +196,11 @@ client.on('message', async message => {
     case "disconnect":
       var user = (args[0] && args[0].substring(0, 3) === "<@!" && args[0][args[0].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? args[0].substring(3, args[0].length - 1) : message.author.id;
       ref.users.child(user).set(false);
+      if (user !== 268131125279457280) { // Bot cannot change nickname/role of server owner
+        // Remove all roles and nickname:
+        message.guild.members.fetch(user).roles.set([]);
+        message.guild.members.fetch(user).setNickname("");
+      }
       m = "Account disconnected.";
     break;
     case "delete":
