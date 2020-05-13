@@ -138,22 +138,24 @@ client.on('message', async message => {
                   if (body.clan.tag === "#22P998QP0") { // In clan:
                     // Save the body response:
                     ref.users.child(user).child("saved").set(body);
-                    // Set their username:
-                    message.guild.members.get(user).setNickname(body.name + " [" + body.townHallLevel + "]");
-                    // Set their role:
-                    switch(body.role) {
-                      case "member":
-                        message.guild.members.get(user).roles.add(roles.member);
-                      break;
-                      case "admin": // elder
-                        message.guild.members.get(user).roles.add(roles.elder);
-                      break;
-                      case "coLeader":
-                        message.guild.members.get(user).roles.add(roles.coleader);
-                      break;
-                      case "leader":
-                        message.guild.members.get(user).roles.add(roles.leader);
-                      break;
+                    if (body.tag !== "#CULL88OG") { // Bot cannot change nickname/role of server owner
+                      // Set their username:
+                      message.guild.members.get(user).setNickname(body.name + " [" + body.townHallLevel + "]");
+                      // Set their role:
+                      switch(body.role) {
+                        case "member":
+                          message.guild.members.get(user).roles.add(roles.member);
+                        break;
+                        case "admin": // elder
+                          message.guild.members.get(user).roles.add(roles.elder);
+                        break;
+                        case "coLeader":
+                          message.guild.members.get(user).roles.add(roles.coleader);
+                        break;
+                        case "leader":
+                          message.guild.members.get(user).roles.add(roles.leader);
+                        break;
+                      }
                     }
                     // Confirm connection:
                     message.channel.send({embed: {
