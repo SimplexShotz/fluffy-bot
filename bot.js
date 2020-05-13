@@ -231,7 +231,7 @@ client.on('message', async message => {
                   ref.users.child(other).child("currency").set(Math.round((d[other].currency + cash) * 100) / 100);
                   message.channel.send({embed: {
                     color: 16777215,
-                    description: `<@!${message.author.id}> gave $${cash} to <@!${other}>. Use "!wallet" to see how much money you now have.`
+                    description: `<@!${message.author.id}> gave $${cash} to <@!${other}>.\n<@!${message.author.id}> now has $${d[message.author.id].currency}.\n<@!${other}> now has $${d[other].currency}.\n`
                   }});
                 } else { // Not enough funds
                   message.channel.send({embed: {
