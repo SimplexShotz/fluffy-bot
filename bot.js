@@ -216,6 +216,27 @@ client.on('message', async message => {
     break;
     case "wallet":
       switch(args[0]) {
+        case "top":
+          ref.users.once("value", function(data) {
+            var d = data.val();
+            var money = [];
+            for (var i in d) {
+              money.push({
+                user: d[i].saved.name,
+                money: d[i].currency
+              });
+            }
+            quicksort(money, 0, money.length - 1, "money");
+            var topList = "**Wallet Leaderboard**\n";
+            for (var i = 0; i < money.length; i++) {
+              topList += `${(i + 1)}. ${money[i].user}: *$${money[i].money}*\n`;
+            }
+            message.channel.send({embed: {
+              color: 16777215,
+              description: topList
+            }});
+          });
+        break;
         case "give":
         case "send":
           var other = args[1].substring(3, args[1].length - 1);
@@ -303,6 +324,32 @@ function updateClan() {
   }, function(err, res, body) {
 
   });
+}
+
+function partition(arr, lo, hi, by) {
+  var pivot = (by ? arr[hi][by] : arr[hi]);
+  var i = lo;
+  for (var j = lo; j < hi; j++) {
+    if ((by ? arr[j][by] : arr[j]) > pivot) {
+      if (i !== j) {
+        var t = arr[j];
+        arr[j] = arr[i];
+        arr[i] = t;
+      }
+      i++;
+    }
+  }
+  var t = arr[hi];
+  arr[hi] = arr[i];
+  arr[i] = t;
+  return i;
+}
+function quicksort(arr, lo, hi, by) {
+  if (lo < hi) {
+    var p = partition(arr, lo, hi, by);
+    quicksort(arr, lo, p - 1, by);
+    quicksort(arr, p + 1, hi, by);
+  }
 }
 
 // start bot
