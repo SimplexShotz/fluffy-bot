@@ -218,10 +218,10 @@ client.on('message', async message => {
       switch(args[0]) {
         case "give":
         case "send":
-          if (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && args[2] && parseInt(args[2]) > 0) { // Checks the arguments to make sure they're valid
+          var other = args[1].substring(3, args[1].length - 1);
+          if (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && args[2] && parseInt(args[2]) > 0 && message.author.id !== other) { // Checks the arguments to make sure they're valid
             ref.users.once("value", function(data) {
               var d = data.val();
-              var other = args[1].substring(3, args[1].length - 1);
               if (d[message.author.id] && d[other]) { // Both have an account
                 if (d[message.author.id].currency >= parseInt(args[2])) { // Has enough funds
                   // Subtract from their funds:
