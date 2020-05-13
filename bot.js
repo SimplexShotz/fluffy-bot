@@ -107,15 +107,16 @@ client.on('message', async message => {
     break;
     case "connect":
       if (args[0] && args[0].charAt(0) === "#") { // If player tag was specified
+        var user = (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? args[1].substring(3, args[1].length - 1) : message.author.id;
         ref.users.once("value", function(data) {
           var d = data.val();
-          if (d[message.author.id]) {
+          if (d[user]) {
             message.channel.send({embed: {
               color: 16777215,
-              description: `You've already connected your account as ${d[message.author.id].saved.name}. To disconnect your account, use the "!disconnect" command.`
+              description: `You've already connected your account as ${d[user].saved.name}. To disconnect your account, use the "!disconnect" command.`
             }});
           } else {
-            ref.users.child(message.author.id).set({
+            ref.users.child(user).set({
               tag: args[0],
               currency: 100,
               saved: {
@@ -136,45 +137,45 @@ client.on('message', async message => {
                 if (body.name) { // Account exists
                   if (body.clan.tag === "#22P998QP0") { // In clan:
                     // Save the body response:
-                    ref.users.child(message.author.id).child("saved").set(body);
+                    ref.users.child(user).child("saved").set(body);
                     // Set their username:
-                    message.member.setNickname(body.name + " [" + body.townHallLevel + "]");
+                    message.guild.members.get(user).setNickname(body.name + " [" + body.townHallLevel + "]");
                     // Set their role:
                     switch(body.role) {
                       case "member":
-                        message.member.roles.add(roles.member);
+                        message.guild.members.get(user).roles.add(roles.member);
                       break;
                       case "admin": // elder
-                        message.member.roles.add(roles.elder);
+                        message.guild.members.get(user).roles.add(roles.elder);
                       break;
                       case "coLeader":
-                        message.member.roles.add(roles.coleader);
+                        message.guild.members.get(user).roles.add(roles.coleader);
                       break;
                       case "leader":
-                        message.member.roles.add(roles.leader);
+                        message.guild.members.get(user).roles.add(roles.leader);
                       break;
                     }
                     // Confirm connection:
                     message.channel.send({embed: {
                       color: 16777215,
-                      description: `You are now connected as ${body.name}! If this is incorrect, please type "!disconnect".`
+                      description: `${user === message.author.id ? "You are" : "<@!" + user + "> is"} now connected as ${body.name}! If this is incorrect, please type "!disconnect".`
                     }});
                   } else { // NOT in clan:
-                    ref.users.child(message.author.id).set(false);
+                    ref.users.child(user).set(false);
                     message.channel.send({embed: {
                       color: 16777215,
                       description: `You must join the clan first!`
                     }});
                   }
                 } else { // Account does not exist
-                  ref.users.child(message.author.id).set(false);
+                  ref.users.child(user).set(false);
                   message.channel.send({embed: {
                     color: 16777215,
                     description: `That user does not exist.`
                   }});
                 }
               } else { // Unsuccessful
-                ref.users.child(message.author.id).set(false);
+                ref.users.child(user).set(false);
                 message.channel.send({embed: {
                   color: 16777215,
                   description: `There was an error: ${body}`
@@ -191,7 +192,8 @@ client.on('message', async message => {
       }
     break;
     case "disconnect":
-      ref.users.child(message.author.id).set(false);
+      var user = (args[0] && args[0].substring(0, 3) === "<@!" && args[0][args[0].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? args[0].substring(3, args[0].length - 1) : message.author.id;
+      ref.users.child(user).set(false);
       m = "Account disconnected.";
     break;
     case "delete":
