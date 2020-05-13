@@ -219,15 +219,16 @@ client.on('message', async message => {
         case "give":
         case "send":
           var other = args[1].substring(3, args[1].length - 1);
-          if (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && args[2] && Number(args[2]) > 0 && message.author.id !== other) { // Checks the arguments to make sure they're valid
+          var cash = Math.round(Number(args[2]) * 100) / 100;
+          if (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && args[2] && cash > 0 && message.author.id !== other) { // Checks the arguments to make sure they're valid
             ref.users.once("value", function(data) {
               var d = data.val();
               if (d[message.author.id] && d[other]) { // Both have an account
-                if (d[message.author.id].currency >= Number(args[2])) { // Has enough funds
+                if (d[message.author.id].currency >= cash) { // Has enough funds
                   // Subtract from their funds:
-                  ref.users.child(message.author.id).child("currency").set(d[message.author.id].currency - Number(args[2]));
+                  ref.users.child(message.author.id).child("currency").set(d[message.author.id].currency - cash);
                   // Add to other person's funds:
-                  ref.users.child(other).child("currency").set(d[other].currency + Number(args[2]));
+                  ref.users.child(other).child("currency").set(d[other].currency + cash);
                   message.channel.send({embed: {
                     color: 16777215,
                     description: `<@!${message.author.id}> gave $${args[2]} to <@!${other}>. Use "!wallet" to see how much money you now have.`
