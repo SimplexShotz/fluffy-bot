@@ -218,7 +218,41 @@ client.on('message', async message => {
       switch(args[0]) {
         case "give":
         case "send":
-
+          if (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && args[2] && parseInt(args[2]) > 0) { // Checks the arguments to make sure they're valid
+            ref.users.once("value", function(data) {
+              var d = data.val();
+              var other = args[1].substring(3, str.length - 1);
+              if (d[messages.author.id] && d[other]) { // Both have an account
+                if (d[messages.author.id].currency >= parseInt(args[2])) { // Has enough funds
+                  // Subtract from their funds:
+                  ref.users.child(messages.author.id).child("currency").set(d[messages.author.id].currency - parseInt(args[2]));
+                  // Add to other person's funds:
+                  ref.users.child(other).child("currency").set(d[other].currency + parseInt(args[2]));
+                  message.channel.send({embed: {
+                    color: 16777215,
+                    description: `<@!${messages.author.id}> gave $${args[2]} to <@!${other}>. Use "!wallet" to see how much money you now have.`
+                  }});
+                } else { // Not enough funds
+                  message.channel.send({embed: {
+                    color: 16777215,
+                    description: `You don't have enough money! You currently have ${d[messages.author.id].currency}.`
+                  }});
+                }
+              } else if (d[other]) { // They do not have an account
+                message.channel.send({embed: {
+                  color: 16777215,
+                  description: `You don't have an account! Use "!connect <player tag>" to make one.`
+                }});
+              } else { // Other person does not have an account
+                message.channel.send({embed: {
+                  color: 16777215,
+                  description: `The person you are trying to give money to doesn't have an account! Tell them to use "!connect <player tag>" to make one.`
+                }});
+              }
+            });
+          } else { // One or more arguments are not valid
+            m = "You need to specify how much to transfer and to whom. The command should look something like this:\n!wallet give @simplexshotz 100";
+          }
         break;
         case "value":
         default: // Get currency:
