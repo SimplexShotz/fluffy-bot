@@ -129,7 +129,7 @@ client.on('message', async message => {
                 authorization: `Bearer ${process.env.API_TOKEN}`
               },
               uri: "https://api.clashofclans.com/v1/players/%23" + args[0].substring(1, args[0].length)
-            }, function(err, res, body) {
+            }, async function(err, res, body) {
               body = JSON.parse(body);
               console.log(body);
               console.log(res.statusCode);
