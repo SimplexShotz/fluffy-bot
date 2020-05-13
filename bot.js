@@ -222,20 +222,20 @@ client.on('message', async message => {
             ref.users.once("value", function(data) {
               var d = data.val();
               var other = args[1].substring(3, args[1].length - 1);
-              if (d[messages.author.id] && d[other]) { // Both have an account
-                if (d[messages.author.id].currency >= parseInt(args[2])) { // Has enough funds
+              if (d[message.author.id] && d[other]) { // Both have an account
+                if (d[message.author.id].currency >= parseInt(args[2])) { // Has enough funds
                   // Subtract from their funds:
-                  ref.users.child(messages.author.id).child("currency").set(d[messages.author.id].currency - parseInt(args[2]));
+                  ref.users.child(message.author.id).child("currency").set(d[message.author.id].currency - parseInt(args[2]));
                   // Add to other person's funds:
                   ref.users.child(other).child("currency").set(d[other].currency + parseInt(args[2]));
                   message.channel.send({embed: {
                     color: 16777215,
-                    description: `<@!${messages.author.id}> gave $${args[2]} to <@!${other}>. Use "!wallet" to see how much money you now have.`
+                    description: `<@!${message.author.id}> gave $${args[2]} to <@!${other}>. Use "!wallet" to see how much money you now have.`
                   }});
                 } else { // Not enough funds
                   message.channel.send({embed: {
                     color: 16777215,
-                    description: `You don't have enough money! You currently have ${d[messages.author.id].currency}.`
+                    description: `You don't have enough money! You currently have ${d[message.author.id].currency}.`
                   }});
                 }
               } else if (d[other]) { // They do not have an account
