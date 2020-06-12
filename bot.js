@@ -136,7 +136,7 @@ client.on('message', async message => {
               console.log(res.statusCode);
               if (res.statusCode === 200) { // Successful
                 if (body.name) { // Account exists
-                  if (body.clan.tag === "#22P998QP0") { // In clan:
+                  if (body.clan.tag === "#PQG92OLC") { // In clan:
                     // Save the body response:
                     ref.users.child(user).child("saved").set(body);
                     if (body.tag !== "#CULL88OG") { // Bot cannot change nickname/role of server owner
