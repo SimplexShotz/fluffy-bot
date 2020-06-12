@@ -18,10 +18,10 @@
   },
   "homepage": "https://github.com/SimplexShotz/fluffy-bot#readme",
   "dependencies": {
-    "websocket-extensions": ">=0.1.4",
     "discord.js": "^12.2.0",
     "firebase": "^7.14.3",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "websocket-extensions": "^0.1.4"
   },
   "engines": {
     "node": "12.16.1"
