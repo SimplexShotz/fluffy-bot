@@ -34,8 +34,12 @@ let warNotifs = {
 const request = require("request");
 const fixieRequest = request.defaults({'proxy': process.env.FIXIE_URL});
 
-client.on('ready', () => {
+client.on("ready", () => {
   console.log("Bot is now running.");
+  client.channels.cache.get("723276193591459880").send({embed: {
+    color: 16777215,
+    description: "Bot reloaded."
+  }});
 });
 
 const commands = {
@@ -56,7 +60,7 @@ let roles = {
   setup: false
 };
 
-client.on('message', async message => {
+client.on("message", async message => {
   // Setup roles:
   if (!roles.setup) {
     roles = {
