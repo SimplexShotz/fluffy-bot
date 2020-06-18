@@ -390,7 +390,7 @@ setInterval(function() {
     if (time % (1440 / 4) === 0) { // 1/4 of a day
       ref.war.once("value", function(data) {
         var warData = data.val();
-        if (warData.state === "notInWar") {
+        if (warData === null || warData.state === "notInWar") {
           fixieRequest({
             headers: {
               Accept: "application/json",
