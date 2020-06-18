@@ -413,7 +413,7 @@ setInterval(function() {
   }); // end time database reference
   ref.war.once("value", function(data) {
     var warData = data.val();
-    if (warData.state) { // War data exists
+    if (warData !== null) { // War data exists
       switch (warData.state) {
         case "notInWar":
           warNotifs = {
