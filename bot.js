@@ -399,6 +399,7 @@ setInterval(function() {
             uri: "https://api.clashofclans.com/v1/clans/%23PQG920LC/currentwar"
           }, async function(err, res, body) {
             body = JSON.parse(body);
+            console.log(body);
             if (res.statusCode === 200) { // Successful
               ref.war.set(body);
             }
