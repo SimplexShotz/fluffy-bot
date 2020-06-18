@@ -54,6 +54,10 @@ const commands = {
   disconnect: {
     info: "Disconnect your Discord account from your Clash of Clans account.",
     arguments: false
+  },
+  wallet: {
+    info: "Your own personal wallet! \"value\" gets the current amount of money in your wallet; \"give\" allows you to transfer money to another user; \"top\" returns the 10 richest users.",
+    arguments: [[false, "value", "give", "top"]]
   }
 };
 let roles = {
