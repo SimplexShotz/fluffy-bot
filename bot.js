@@ -74,8 +74,8 @@ client.on('message', async message => {
   }
 
   // Get the command and arguments:
-  const args = message.content.substring(1).split(' ');
-  const cmd = args[0].toLowerCase();
+  let args = message.content.substring(1).split(' ');
+  let cmd = args[0].toLowerCase();
   args = args.splice(1);
 
   let m = "";
