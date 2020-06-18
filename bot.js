@@ -241,10 +241,12 @@ client.on('message', async message => {
             var d = data.val();
             var money = [];
             for (var i in d) {
-              money.push({
-                user: d[i].saved.name,
-                money: d[i].currency
-              });
+              if (d[i]) {
+                money.push({
+                  user: d[i].saved.name,
+                  money: d[i].currency
+                });
+              }
             }
             quicksort(money, 0, money.length - 1, "money");
             var topList = "**Wallet Leaderboard**\n";
