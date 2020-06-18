@@ -438,6 +438,7 @@ setInterval(function() {
             color: 16777215,
             description: "@everyone\n\nWar Preperation has ended! It's war time! Go get your attacks in!"
           }});
+          ref.war.child("state").set("inWar");
           warNotifs.warBegin = true;
         }
       break;
@@ -466,6 +467,7 @@ setInterval(function() {
             description: "@everyone\n\nWar has ended!"
           }});
           // TODO: send war info, such as stars + who won + best attacker, etc.
+          ref.war.child("state").set("notInWar");
           warNotifs.warEnd = true;
         }
       break;
