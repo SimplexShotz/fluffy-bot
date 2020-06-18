@@ -413,64 +413,66 @@ setInterval(function() {
   }); // end time database reference
   ref.war.once("value", function(data) {
     var warData = data.val();
-    switch (warData.state) {
-      case "notInWar":
-        warNotifs = {
-          preperationAboutToEnd: false,
-          warBegin: false,
-          attackReminder: false,
-          warAboutToEnd: false,
-          warEnd: false
-        };
-      break;
-      case "preperation":
-        var preperationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
-        var curTime = new Date().getTime();
-        if (!warNotifs.preperationAboutToEnd && curTime >= (preperationEndTime - (60 * 60 * 1000))) { // Preperation is about to end (in 60 minutes)
-          client.channels.cache.get("709784763858288681").send({embed: {
-            color: 16777215,
-            description: "@everyone\n\nWar Preperation is going to end in less than an hour! Make sure to donate!"
-          }});
-          warNotifs.preperationAboutToEnd = true;
-        }
-        if (!warNotifs.warBegin && curTime >= preperationEndTime) { // Preperation has ended
-          client.channels.cache.get("709784763858288681").send({embed: {
-            color: 16777215,
-            description: "@everyone\n\nWar Preperation has ended! It's war time! Go get your attacks in!"
-          }});
-          ref.war.child("state").set("inWar");
-          warNotifs.warBegin = true;
-        }
-      break;
-      case "inWar":
-        var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
-        var curTime = new Date().getTime();
-        if (!warNotifs.attackReminder && curTime >= (warEndTime - (2 * 60 * 60 * 1000))) { // Send war reminders 2 hours before war ends
-          client.channels.cache.get("709784763858288681").send({embed: {
-            color: 16777215,
-            description: "@everyone\n\nWAR ENDS IN LESS THAN 2 HOURS! GET YOUR ATTACKS IN IF YOU HAVEN'T!"
-          }});
-          // TODO: mention specific players who have not attacked yet
-          warNotifs.attackReminder = true;
-        }
-        if (!warNotifs.warAboutToEnd && curTime >= (warEndTime - (30 * 60 * 1000))) { // War is about to end (in 30 minutes)
-          client.channels.cache.get("709784763858288681").send({embed: {
-            color: 16777215,
-            description: "@everyone\n\nWAR ENDS IN LESS THAN 30 MINUTES! GET YOUR ATTACKS IN IF YOU HAVEN'T!"
-          }});
-          // TODO: mention specific players who have not attacked yet
-          warNotifs.warAboutToEnd = true;
-        }
-        if (!warNotifs.warEnd && curTime >= warEndTime) { // War has ended
-          client.channels.cache.get("709784763858288681").send({embed: {
-            color: 16777215,
-            description: "@everyone\n\nWar has ended!"
-          }});
-          // TODO: send war info, such as stars + who won + best attacker, etc.
-          ref.war.child("state").set("notInWar");
-          warNotifs.warEnd = true;
-        }
-      break;
+    if (warData.state) { // War data exists
+      switch (warData.state) {
+        case "notInWar":
+          warNotifs = {
+            preperationAboutToEnd: false,
+            warBegin: false,
+            attackReminder: false,
+            warAboutToEnd: false,
+            warEnd: false
+          };
+        break;
+        case "preperation":
+          var preperationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
+          var curTime = new Date().getTime();
+          if (!warNotifs.preperationAboutToEnd && curTime >= (preperationEndTime - (60 * 60 * 1000))) { // Preperation is about to end (in 60 minutes)
+            client.channels.cache.get("709784763858288681").send({embed: {
+              color: 16777215,
+              description: "@everyone\n\nWar Preperation is going to end in less than an hour! Make sure to donate!"
+            }});
+            warNotifs.preperationAboutToEnd = true;
+          }
+          if (!warNotifs.warBegin && curTime >= preperationEndTime) { // Preperation has ended
+            client.channels.cache.get("709784763858288681").send({embed: {
+              color: 16777215,
+              description: "@everyone\n\nWar Preperation has ended! It's war time! Go get your attacks in!"
+            }});
+            ref.war.child("state").set("inWar");
+            warNotifs.warBegin = true;
+          }
+        break;
+        case "inWar":
+          var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
+          var curTime = new Date().getTime();
+          if (!warNotifs.attackReminder && curTime >= (warEndTime - (2 * 60 * 60 * 1000))) { // Send war reminders 2 hours before war ends
+            client.channels.cache.get("709784763858288681").send({embed: {
+              color: 16777215,
+              description: "@everyone\n\nWAR ENDS IN LESS THAN 2 HOURS! GET YOUR ATTACKS IN IF YOU HAVEN'T!"
+            }});
+            // TODO: mention specific players who have not attacked yet
+            warNotifs.attackReminder = true;
+          }
+          if (!warNotifs.warAboutToEnd && curTime >= (warEndTime - (30 * 60 * 1000))) { // War is about to end (in 30 minutes)
+            client.channels.cache.get("709784763858288681").send({embed: {
+              color: 16777215,
+              description: "@everyone\n\nWAR ENDS IN LESS THAN 30 MINUTES! GET YOUR ATTACKS IN IF YOU HAVEN'T!"
+            }});
+            // TODO: mention specific players who have not attacked yet
+            warNotifs.warAboutToEnd = true;
+          }
+          if (!warNotifs.warEnd && curTime >= warEndTime) { // War has ended
+            client.channels.cache.get("709784763858288681").send({embed: {
+              color: 16777215,
+              description: "@everyone\n\nWar has ended!"
+            }});
+            // TODO: send war info, such as stars + who won + best attacker, etc.
+            ref.war.child("state").set("notInWar");
+            warNotifs.warEnd = true;
+          }
+        break;
+      }
     }
   }); // end war database reference
 }, 60 * 1000); // end setInterval
