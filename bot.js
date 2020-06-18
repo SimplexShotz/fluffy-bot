@@ -1,11 +1,11 @@
 
 // Setup Discord:
 const Discord = require("discord.js");
-const client = new Discord.Client();
+const client = new Discord.Client({disableEveryone: false});
 
 // Setup Firebase:
 const firebase = require("firebase");
-var firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyBgfiB26cap_PUCxwqIa8m0xPDqtrfXt5Q",
   authDomain: "ss-fluffy-bot.firebaseapp.com",
   databaseURL: "https://ss-fluffy-bot.firebaseio.com",
@@ -16,10 +16,18 @@ var firebaseConfig = {
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-var database = firebase.database();
-var ref = {
+let database = firebase.database();
+let ref = {
   users: database.ref("users"),
-  time: database.ref("time")
+  time: database.ref("time"),
+  war: database.ref("war")
+};
+let warNotifs = {
+  preperationAboutToEnd: false,
+  warBegin: false,
+  attackReminder: false,
+  warAboutToEnd: false,
+  warEnd: false
 };
 
 // Setup Request:
@@ -30,7 +38,7 @@ client.on('ready', () => {
   console.log("Bot is now running.");
 });
 
-var commands = {
+const commands = {
   help: {
     info: "Shows all commands or the usage of a specific command.",
     arguments: [[false, "command name"]]
@@ -44,7 +52,7 @@ var commands = {
     arguments: false
   }
 };
-var roles = {
+let roles = {
   setup: false
 };
 
@@ -66,15 +74,15 @@ client.on('message', async message => {
   }
 
   // Get the command and arguments:
-  var args = message.content.substring(1).split(' ');
-  var cmd = args[0].toLowerCase();
+  const args = message.content.substring(1).split(' ');
+  const cmd = args[0].toLowerCase();
   args = args.splice(1);
 
-  var m = "";
+  let m = "";
   switch(cmd) {
     case "?":
     case "help":
-      var help = "";
+      let help = "";
       if (!args[0]) { // If no command was specified:
         help = `**Help Menu**\n`;
         // Print all commands:
@@ -364,19 +372,106 @@ function quicksort(arr, lo, hi, by) {
   }
 }
 
+function convertToValidDate(cocDate) {
+  var year = cocDate.substring(0, 4);
+  var month = cocDate.substring(4, 6);
+  var day = cocDate.substring(6, 8);
+
+  var hour = cocDate.substring(9, 11);
+  var minute = cocDate.substring(11, 13);
+  var second = cocDate.substring(13, 15);
+
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}.000Z`;
+}
+
 setInterval(function() {
   ref.time.once("value", function(data) {
     var time = data.val();
-    if (time >= 360) { // 1/4 of a day
-      // TODO update clan + war status
-      // Reset time:
-      ref.time.set(0);
-    } else {
-      // Increment time:
-      ref.time.set(time + 1);
+    if (time % (1440 / 4) === 0) { // 1/4 of a day
+      ref.war.once("value", function(data) {
+        var warData = data.val();
+        if (warData.state === "notInWar") {
+          fixieRequest({
+            headers: {
+              Accept: "application/json",
+              authorization: `Bearer ${process.env.API_TOKEN}`
+            },
+            uri: "https://api.clashofclans.com/v1/clans/%23PQG920LC/currentwar"
+          }, async function(err, res, body) {
+            body = JSON.parse(body);
+            if (res.statusCode === 200) { // Successful
+              ref.war.set(body);
+            }
+          }); // end request
+        }
+      }); // end war database reference
     }
-  });
-}, 60 * 1000);
+    if (time % 1440 === 0) {
+      // TODO: update clan status
+    }
+    ref.time.set(time + 1);
+  }); // end time database reference
+  ref.war.once("value", function(data) {
+    var warData = data.val();
+    switch (warData.state) {
+      case "notInWar":
+        warNotifs = {
+          preperationAboutToEnd: false,
+          warBegin: false,
+          attackReminder: false,
+          warAboutToEnd: false,
+          warEnd: false
+        };
+      break;
+      case "preperation":
+        var preperationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
+        var curTime = new Date().getTime();
+        if (!warNotifs.preperationAboutToEnd && curTime >= (preperationEndTime - (60 * 60 * 1000))) { // Preperation is about to end (in 60 minutes)
+          client.channels.cache.get("709784763858288681").send({embed: {
+            color: 16777215,
+            description: "@everyone\n\nWar Preperation is going to end in less than an hour! Make sure to donate!"
+          }});
+          warNotifs.preperationAboutToEnd = true;
+        }
+        if (!warNotifs.warBegin && curTime >= preperationEndTime) { // Preperation has ended
+          client.channels.cache.get("709784763858288681").send({embed: {
+            color: 16777215,
+            description: "@everyone\n\nWar Preperation has ended! It's war time! Go get your attacks in!"
+          }});
+          warNotifs.warBegin = true;
+        }
+      break;
+      case "inWar":
+        var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
+        var curTime = new Date().getTime();
+        if (!warNotifs.attackReminder && curTime >= (warEndTime - (2 * 60 * 60 * 1000))) { // Send war reminders 2 hours before war ends
+          client.channels.cache.get("709784763858288681").send({embed: {
+            color: 16777215,
+            description: "@everyone\n\nWAR ENDS IN LESS THAN 2 HOURS! GET YOUR ATTACKS IN IF YOU HAVEN'T!"
+          }});
+          // TODO: mention specific players who have not attacked yet
+          warNotifs.attackReminder = true;
+        }
+        if (!warNotifs.warAboutToEnd && curTime >= (warEndTime - (30 * 60 * 1000))) { // War is about to end (in 30 minutes)
+          client.channels.cache.get("709784763858288681").send({embed: {
+            color: 16777215,
+            description: "@everyone\n\nWAR ENDS IN LESS THAN 30 MINUTES! GET YOUR ATTACKS IN IF YOU HAVEN'T!"
+          }});
+          // TODO: mention specific players who have not attacked yet
+          warNotifs.warAboutToEnd = true;
+        }
+        if (!warNotifs.warEnd && curTime >= warEndTime) { // War has ended
+          client.channels.cache.get("709784763858288681").send({embed: {
+            color: 16777215,
+            description: "@everyone\n\nWar has ended!"
+          }});
+          // TODO: send war info, such as stars + who won + best attacker, etc.
+          warNotifs.warEnd = true;
+        }
+      break;
+    }
+  }); // end war database reference
+}, 60 * 1000); // end setInterval
 
 // start bot
 client.login(process.env.BOT_TOKEN); //BOT_TOKEN is the Client Secret
