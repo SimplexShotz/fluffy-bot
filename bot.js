@@ -397,7 +397,7 @@ function convertToValidDate(cocDate) {
 setInterval(function() {
   ref.time.once("value", function(data) {
     var time = data.val();
-    if (time % (1440 / 4) === 0) { // 1/4 of a day
+    if (time % (1440 / 2) === 0) { // 1/2 of a day
       ref.war.once("value", function(data) {
         var warData = data.val();
         if (warData === null || warData.state === "notInWar") {
@@ -438,10 +438,10 @@ setInterval(function() {
         case "preperation":
           var preperationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
           var curTime = new Date().getTime();
-          if (!warNotifs.preperationAboutToEnd && curTime >= (preperationEndTime - (60 * 60 * 1000))) { // Preperation is about to end (in 60 minutes)
+          if (!warNotifs.preperationAboutToEnd && curTime >= (preperationEndTime - (2 * 60 * 60 * 1000))) { // Preperation is about to end (in 2 hours)
             client.channels.cache.get("709784763858288681").send({embed: {
               color: 16777215,
-              description: "@everyone\n\nWar Preperation is going to end in less than an hour! Make sure to donate!"
+              description: "@everyone\n\nWar Preperation is going to end in less than 2 hours! Make sure to donate!"
             }});
             warNotifs.preperationAboutToEnd = true;
           }
