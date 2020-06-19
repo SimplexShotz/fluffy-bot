@@ -425,6 +425,7 @@ setInterval(function() {
   ref.war.once("value", function(data) {
     var warData = data.val();
     if (warData !== null) { // War data exists
+      console.log(warData.state);
       switch (warData.state) {
         case "notInWar":
           warNotifs = {
@@ -438,6 +439,9 @@ setInterval(function() {
         case "preperation":
           var preperationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
           var curTime = new Date().getTime();
+          console.log(warNotifs);
+          console.log(preperationEndTime);
+          console.log(curTime);
           if (!warNotifs.preperationAboutToEnd && curTime >= (preperationEndTime - (2 * 60 * 60 * 1000))) { // Preperation is about to end (in 2 hours)
             client.channels.cache.get("709784763858288681").send({embed: {
               color: 16777215,
