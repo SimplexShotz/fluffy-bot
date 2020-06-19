@@ -23,7 +23,7 @@ let ref = {
   war: database.ref("war")
 };
 let warNotifs = {
-  preperationAboutToEnd: false,
+  preparationAboutToEnd: false,
   warBegin: false,
   attackReminder: false,
   warAboutToEnd: false,
@@ -425,34 +425,30 @@ setInterval(function() {
   ref.war.once("value", function(data) {
     var warData = data.val();
     if (warData !== null) { // War data exists
-      console.log(warData.state);
       switch (warData.state) {
         case "notInWar":
           warNotifs = {
-            preperationAboutToEnd: false,
+            preparationAboutToEnd: false,
             warBegin: false,
             attackReminder: false,
             warAboutToEnd: false,
             warEnd: false
           };
         break;
-        case "preperation":
-          var preperationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
+        case "preparation":
+          var preparationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
           var curTime = new Date().getTime();
-          console.log(warNotifs);
-          console.log(preperationEndTime);
-          console.log(curTime);
-          if (!warNotifs.preperationAboutToEnd && curTime >= (preperationEndTime - (2 * 60 * 60 * 1000))) { // Preperation is about to end (in 2 hours)
+          if (!warNotifs.preparationAboutToEnd && curTime >= (preparationEndTime - (2 * 60 * 60 * 1000))) { // Preparation is about to end (in 2 hours)
             client.channels.cache.get("709784763858288681").send({embed: {
               color: 16777215,
-              description: "@everyone\n\nWar Preperation is going to end in less than 2 hours! Make sure to donate!"
+              description: "@everyone\n\nWar Preparation is going to end in less than 2 hours! Make sure to donate!"
             }});
-            warNotifs.preperationAboutToEnd = true;
+            warNotifs.preparationAboutToEnd = true;
           }
-          if (!warNotifs.warBegin && curTime >= preperationEndTime) { // Preperation has ended
+          if (!warNotifs.warBegin && curTime >= preparationEndTime) { // Preparation has ended
             client.channels.cache.get("709784763858288681").send({embed: {
               color: 16777215,
-              description: "@everyone\n\nWar Preperation has ended! It's war time! Go get your attacks in!"
+              description: "@everyone\n\nWar Preparation has ended! It's war time! Go get your attacks in!"
             }});
             ref.war.child("state").set("inWar");
             warNotifs.warBegin = true;
