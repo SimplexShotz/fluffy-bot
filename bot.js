@@ -20,19 +20,13 @@ let database = firebase.database();
 let ref = {
   users: database.ref("users"),
   time: database.ref("time"),
-  war: database.ref("war")
-};
-let warNotifs = {
-  preparationAboutToEnd: false,
-  warBegin: false,
-  attackReminder: false,
-  warAboutToEnd: false,
-  warEnd: false
+  war: database.ref("war"),
+  warNotifs: database.ref("warNotifs")
 };
 
 // Setup Request:
 const request = require("request");
-const fixieRequest = request.defaults({'proxy': process.env.FIXIE_URL});
+const fixieRequest = request.defaults({"proxy": process.env.FIXIE_URL});
 
 client.on("ready", () => {
   console.log("Bot is now running.");
@@ -394,96 +388,167 @@ function convertToValidDate(cocDate) {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}.000Z`;
 }
 
+function updateWar() {
+  fixieRequest({
+    headers: {
+      Accept: "application/json",
+      authorization: `Bearer ${process.env.API_TOKEN}`
+    },
+    uri: "https://api.clashofclans.com/v1/clans/%23PQG920LC/currentwar"
+  }, async function(err, res, body) {
+    body = JSON.parse(body);
+    if (res.statusCode === 200) { // Successful
+      ref.war.set(body);
+    }
+  }); // end request
+}
+
 setInterval(function() {
   ref.time.once("value", function(data) {
     var time = data.val();
-    if (time % (1440 / 2) === 0) { // 1/2 of a day
+    if (time % (1440 * 3 / 4) === 0) { // every 3/4ths of a day
       ref.war.once("value", function(data) {
         var warData = data.val();
         if (warData === null || warData.state === "notInWar") {
-          fixieRequest({
-            headers: {
-              Accept: "application/json",
-              authorization: `Bearer ${process.env.API_TOKEN}`
-            },
-            uri: "https://api.clashofclans.com/v1/clans/%23PQG920LC/currentwar"
-          }, async function(err, res, body) {
-            body = JSON.parse(body);
-            console.log(body);
-            if (res.statusCode === 200) { // Successful
-              ref.war.set(body);
-            }
-          }); // end request
+          updateWar();
         }
       }); // end war database reference
     }
-    if (time % 1440 === 0) {
+    if (time % 1440 === 0) { // every whole day
       // TODO: update clan status
     }
     ref.time.set(time + 1);
   }); // end time database reference
   ref.war.once("value", function(data) {
-    var warData = data.val();
+    let warData = data.val();
     if (warData !== null) { // War data exists
-      switch (warData.state) {
-        case "notInWar":
-          warNotifs = {
-            preparationAboutToEnd: false,
-            warBegin: false,
-            attackReminder: false,
-            warAboutToEnd: false,
-            warEnd: false
-          };
-        break;
-        case "preparation":
-          var preparationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
-          var curTime = new Date().getTime();
-          if (!warNotifs.preparationAboutToEnd && curTime >= (preparationEndTime - (2 * 60 * 60 * 1000))) { // Preparation is about to end (in 2 hours)
-            client.channels.cache.get("709784763858288681").send({embed: {
-              color: 16777215,
-              description: "@everyone\n\nWar Preparation is going to end in less than 2 hours! Make sure to donate!"
-            }});
-            warNotifs.preparationAboutToEnd = true;
-          }
-          if (!warNotifs.warBegin && curTime >= preparationEndTime) { // Preparation has ended
-            client.channels.cache.get("709784763858288681").send({embed: {
-              color: 16777215,
-              description: "@everyone\n\nWar Preparation has ended! It's war time! Go get your attacks in!"
-            }});
-            ref.war.child("state").set("inWar");
-            warNotifs.warBegin = true;
-          }
-        break;
-        case "inWar":
-          var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
-          var curTime = new Date().getTime();
-          if (!warNotifs.attackReminder && curTime >= (warEndTime - (2 * 60 * 60 * 1000))) { // Send war reminders 2 hours before war ends
-            client.channels.cache.get("709784763858288681").send({embed: {
-              color: 16777215,
-              description: "@everyone\n\nWAR ENDS IN LESS THAN 2 HOURS! GET YOUR ATTACKS IN IF YOU HAVEN'T!"
-            }});
-            // TODO: mention specific players who have not attacked yet
-            warNotifs.attackReminder = true;
-          }
-          if (!warNotifs.warAboutToEnd && curTime >= (warEndTime - (30 * 60 * 1000))) { // War is about to end (in 30 minutes)
-            client.channels.cache.get("709784763858288681").send({embed: {
-              color: 16777215,
-              description: "@everyone\n\nWAR ENDS IN LESS THAN 30 MINUTES! GET YOUR ATTACKS IN IF YOU HAVEN'T!"
-            }});
-            // TODO: mention specific players who have not attacked yet
-            warNotifs.warAboutToEnd = true;
-          }
-          if (!warNotifs.warEnd && curTime >= warEndTime) { // War has ended
-            client.channels.cache.get("709784763858288681").send({embed: {
-              color: 16777215,
-              description: "@everyone\n\nWar has ended!"
-            }});
-            // TODO: send war info, such as stars + who won + best attacker, etc.
-            ref.war.child("state").set("notInWar");
-            warNotifs.warEnd = true;
-          }
-        break;
-      }
+      ref.warNotifs.once("value", function(data) {
+        let warNotifs = data.val();
+        switch (warData.state) {
+          case "notInWar":
+            let newWarNotifs = {
+              "0_preparationAboutToEnd": false,
+              "1_warBegin": false,
+              "2-R_attackReminderReload": false,
+              "2_attackReminder": false,
+              "3-R_warAboutToEndReload": false,
+              "3_warAboutToEnd": false,
+              "4-R_warEndReload": false,
+              "4_warEnd": false
+            };
+            ref.warNotifs.set(newWarNotifs);
+          break;
+          case "preparation":
+            var preparationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
+            var curTime = new Date().getTime();
+            if (!warNotifs["0_preparationAboutToEnd"] && curTime >= (preparationEndTime - (2 * 60 * 60 * 1000))) { // Preparation is about to end (in 2 hours)
+              client.channels.cache.get("709784763858288681").send({embed: {
+                color: 16777215,
+                description: "@everyone\n\nWar Preparation is going to end in less than 2 hours! Make sure to donate!"
+              }});
+              ref.warNotifs.child("0_preparationAboutToEnd").set(true);
+            }
+            if (!warNotifs["1_warBegin"] && curTime >= preparationEndTime) { // Preparation has ended
+              client.channels.cache.get("709784763858288681").send({embed: {
+                color: 16777215,
+                description: "@everyone\n\nWar Preparation has ended! It's war time! Go get your attacks in!"
+              }});
+              ref.war.child("state").set("inWar");
+              ref.warNotifs.child("1_warBegin").set(true);
+            }
+          break;
+          case "inWar":
+            var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
+            var curTime = new Date().getTime();
+            if (!warNotifs["2-R_attackReminderReload"] && curTime >= (warEndTime - (2 * 60 * 60 * 1000 + 60 * 1000))) { // Reload war status 1 min before next reminder
+              updateWar();
+              ref.warNotifs.child("2-R_attackReminderReload").set(true);
+            }
+            if (!warNotifs["2_attackReminder"] && curTime >= (warEndTime - (2 * 60 * 60 * 1000))) { // Send war reminders 2 hours before war ends
+              ref.users.once("value", function(data) {
+                // GET USERS THAT STILL HAVE TO ATTACK:
+                let userData = data.val();
+                let tagToID = {};
+                for (let i in userData) {
+                  if (userData[i]) {
+                    tagToID[userData[i].tag] = i;
+                  }
+                }
+                let hasToAttack = [];
+                for (let i = 0, members = warData.clan.members, len = members.length; i < len; i++) {
+                  if (members[i].attacks.length < 2 && tagToID[members[i].tag]) { // If they have less than 2 attacks and they are in the Discord server
+                    hasToAttack.push(tagToID[members[i].tag]);
+                  }
+                }
+                if (hasToAttack.length !== 0) { // Attacks are left
+                  let pingText = "<@!" + hasToAttack.join("><@!") + ">";
+                  // Send message:
+                  client.channels.cache.get("709784763858288681").send({embed: {
+                    color: 16777215,
+                    description: pingText + "\n\nWAR ENDS IN LESS THAN 2 HOURS! GET YOUR ATTACKS IN!"
+                  }});
+                } else { // Everyone has attacked!!! WOW!
+                  client.channels.cache.get("709784763858288681").send({embed: {
+                    color: 16777215,
+                    description: "War ends in less than 2 hours! Everyone in the server has gotten their attacks in; nice job!"
+                  }});
+                }
+              });
+              ref.warNotifs.child("2_attackReminder").set(true);
+            }
+            if (!warNotifs["3-R_warAboutToEndReload"] && curTime >= (warEndTime - (30 * 60 * 1000 + 60 * 1000))) { // Reload war status 1 min before next reminder
+              updateWar();
+              ref.warNotifs.child("3-R_warAboutToEndReload").set(true);
+            }
+            if (!warNotifs["3_warAboutToEnd"] && curTime >= (warEndTime - (30 * 60 * 1000))) { // War is about to end (in 30 minutes)
+              ref.users.once("value", function(data) {
+                // GET USERS THAT STILL HAVE TO ATTACK:
+                let userData = data.val();
+                let tagToID = {};
+                for (let i in userData) {
+                  if (userData[i]) {
+                    tagToID[userData[i].tag] = i;
+                  }
+                }
+                let hasToAttack = [];
+                for (let i = 0, members = warData.clan.members, len = members.length; i < len; i++) {
+                  if (members[i].attacks.length < 2 && tagToID[members[i].tag]) { // If they have less than 2 attacks and they are in the Discord server
+                    hasToAttack.push(tagToID[members[i].tag]);
+                  }
+                }
+                if (hasToAttack.length !== 0) { // Attacks are left
+                  let pingText = "<@!" + hasToAttack.join("><@!") + ">";
+                  // Send message:
+                  client.channels.cache.get("709784763858288681").send({embed: {
+                    color: 16777215,
+                    description: pingText + "\n\nWAR ENDS IN LESS THAN 30 MINUTES! GET YOUR ATTACKS IN!"
+                  }});
+                } else { // Everyone has attacked!!! WOW!
+                  client.channels.cache.get("709784763858288681").send({embed: {
+                    color: 16777215,
+                    description: "War ends in less than 30 minutes! Everyone in the server has gotten their attacks in; nice job!"
+                  }});
+                }
+              });
+              ref.warNotifs.child("3_warAboutToEnd").set(true);
+            }
+            if (!warNotifs["4-R_warEndReload"] && curTime >= warEndTime + (1 * 60 * 1000)) { // Reload war status 1 min before next reminder
+              updateWar();
+              ref.warNotifs.child("4-R_warEndReload").set(true);
+            }
+            if (!warNotifs["4_warEnd"] && curTime >= warEndTime + (2 * 60 * 1000)) { // 2 mins after war has ended
+              console.log(warData);
+              client.channels.cache.get("709784763858288681").send({embed: {
+                color: 16777215,
+                description: "@everyone\n\nWar has ended! [in the future, stats about the war will be seen here]"
+              }});
+              // TODO: send war info, such as stars + who won + best attacker, etc.
+              ref.war.child("state").set("notInWar");
+              ref.warNotifs.child("4_warEnd").set(true);
+            }
+          break;
+        }
+      });
     }
   }); // end war database reference
 }, 60 * 1000); // end setInterval
