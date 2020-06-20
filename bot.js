@@ -533,11 +533,11 @@ setInterval(function() {
               });
               ref.warNotifs.child("3_warAboutToEnd").set(true);
             }
-            if (!warNotifs["4-R_warEndReload"] && curTime >= warEndTime + (1 * 60 * 1000)) { // Reload war status 1 min before next reminder
+            if (!warNotifs["4-R_warEndReload"] && curTime >= warEndTime - (1 * 60 * 1000)) { // Reload war status 1 min before next reminder
               updateWar();
               ref.warNotifs.child("4-R_warEndReload").set(true);
             }
-            if (!warNotifs["4_warEnd"] && curTime >= warEndTime + (2 * 60 * 1000)) { // 2 mins after war has ended
+            if (!warNotifs["4_warEnd"] && curTime >= warEndTime) { // War has ended
               console.log(warData);
               client.channels.cache.get("709784763858288681").send({embed: {
                 color: 16777215,
