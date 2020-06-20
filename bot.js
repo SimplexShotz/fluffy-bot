@@ -21,7 +21,8 @@ let ref = {
   users: database.ref("users"),
   time: database.ref("time"),
   war: database.ref("war"),
-  warNotifs: database.ref("warNotifs")
+  warNotifs: database.ref("warNotifs"),
+  warHistory: database.ref("warHistory")
 };
 
 // Setup Request:
@@ -543,6 +544,7 @@ setInterval(function() {
                 description: "@everyone\n\nWar has ended! [in the future, stats about the war will be seen here]"
               }});
               // TODO: send war info, such as stars + who won + best attacker, etc.
+              ref.warHistory.push(warData);
               ref.war.child("state").set("notInWar");
               ref.warNotifs.child("4_warEnd").set(true);
             }
