@@ -124,7 +124,7 @@ client.on("message", async message => {
           console.log(args[1]);
           console.log(args[1].substring(0, 3));
           console.log(args[1][args[1].length - 1]);
-          console.log(message.member.roles.cache.find(role => role.name === "Leader")));
+          console.log(message.member.roles.cache.find(role => role.name === "Leader"));
           console.log(args[1].substring(3, args[1].length - 1));
         }
         var user = (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? args[1].substring(3, args[1].length - 1) : message.author.id;
