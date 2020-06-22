@@ -345,6 +345,10 @@ client.on("message", async message => {
               }
               m += "\n\nUse _!war history <war number>_ to get more details about a specific war.";
             }
+            message.channel.send({embed: {
+              color: 16777215,
+              description: m
+            }});
           });
         break;
       }
