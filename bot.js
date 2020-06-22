@@ -329,6 +329,26 @@ client.on("message", async message => {
         break;
       }
     break;
+    case "war":
+      switch(args[0]) {
+        case "history":
+          ref.warHistory.once("value", function(data) {
+            let warHData = data.val();
+            if (args[1]) {
+              m = "coming soon";
+            } else {
+              m = "**War History:**";
+              var n = 1;
+              for (let i in warHData) {
+                m += `\nWar ${n}: ${warHData[i].clan.name} vs. ${warHData[i].opponent.name} | ${warHData[i].clan.stars} — ${warHData[i].opponent.stars} (War ${((warHData[i].clan.stars > warHData[i].opponent.stars) || (warHData[i].clan.stars === warHData[i].opponent.stars && warHData[i].clan.destructionPercentage > warHData[i].opponent.destructionPercentage)) ? ("Won") : ((warHData[i].clan.stars === warHData[i].opponent.stars && warHData[i].clan.destructionPercentage === warHData[i].opponent.destructionPercentage) ? "Drawn" : "Lost")})`;
+                n++;
+              }
+              m += "\n\nUse _!war history <war number>_ to get more details about a specific war.";
+            }
+          });
+        break;
+      }
+    break;
     case "test":
       // message.member.roles.add(roles.leader);
       console.log(args);
