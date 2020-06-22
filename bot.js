@@ -412,13 +412,21 @@ function updateWar() {
   }); // end request
 }
 
+function getDefenderMapPosition(wd, tag) {
+  for (let i = 0; i < wd.opponent.members.length; i++) {
+    if (wd.opponent.members[i].tag === tag) {
+      return wd.opponent.members[i].mapPosition;
+    }
+  }
+}
+
 setInterval(function() {
   ref.time.once("value", function(data) {
     var time = data.val();
     if (time % (1440 * 3 / 4) === 0) { // every 3/4ths of a day
       ref.war.once("value", function(data) {
         var warData = data.val();
-        if (warData === null || warData.state === "notInWar") {
+        if (warData === null || warData.state === "notInWar" || warData.state === "warEnded") {
           updateWar();
         }
       }); // end war database reference
@@ -541,19 +549,120 @@ setInterval(function() {
               });
               ref.warNotifs.child("3_warAboutToEnd").set(true);
             }
-            if (!warNotifs["4-R_warEndReload"] && curTime >= warEndTime - (1 * 60 * 1000)) { // Reload war status 1 min before next reminder
+            if (!warNotifs["4-R_warEndReload"] && curTime >= warEndTime + (3 * 60 * 1000)) { // Reload war status 1 min before next reminder
               updateWar();
               ref.warNotifs.child("4-R_warEndReload").set(true);
             }
-            if (!warNotifs["4_warEnd"] && curTime >= warEndTime) { // War has ended
-              console.log(warData);
+            if (!warNotifs["4_warEnd"] && curTime >= warEndTime + (4 * 60 * 1000)) { // War has ended
+              console.log("war not ended"); // TOOD
+              let clanPercent = 0;
+              for (let i = 0; i < warData.clan.members.length; i++) {
+                if (warData.clan.members[i].attacks) {
+                  for (let j = 0; j < warData.clan.members[i].attacks.length; j++) {
+                    clanPercent += warData.clan.members[i].attacks[j].destructionPercentage;
+                  }
+                }
+              }
+
+              let opponentPercent = 0;
+              for (let i = 0; i < warData.opponent.members.length; i++) {
+                if (warData.opponent.members[i].attacks) {
+                  for (let j = 0; j < warData.opponent.members[i].attacks.length; j++) {
+                    opponentPercent += warData.opponent.members[i].attacks[j].destructionPercentage;
+                  }
+                }
+              }
+
+              let attackScores = [];
+              for (let i = 0; i < warData.clan.members.length; i++) {
+                attackScores.push({
+                  name: warData.clan.members[i].name,
+                  score: 0,
+                  stars: 0,
+                  percentage: 0,
+                  attackDifference: 0
+                });
+                if (warData.clan.members[i].attacks) {
+                  for (let j = 0; j < warData.clan.members[i].attacks.length; j++) {
+                    let attack = warData.clan.members[i].attacks[j]; // 10 is max              up to here v    Account for placement difference                                                             v reduce impact
+                    attackScores[i].score += (attack.stars + 1) * (attack.destructionPercentage / 100) * (10 / 8) + (warData.clan.members[i].mapPosition - getDefenderMapPosition(warData, attack.defenderTag)) / (warData.teamSize / 2);
+                    attackScores[i].stars += attack.stars;
+                    attackScores[i].percentage += attack.destructionPercentage;
+                    attackScores[i].attackDifference += warData.clan.members[i].mapPosition - getDefenderMapPosition(warData, attack.defenderTag);
+                  }
+                }
+              }
+
+              quicksort(attackScores, 0, attackScores.length - 1, "score");
+
+              let topAttacks = "";
+              for (let i = 0; i < 10; i++) {
+                topAttacks += `\n${(i + 1)}. ${attackScores[i].name}:\n — (${attackScores[i].stars} Stars, ${attackScores[i].percentage}%, Attacked ${Math.abs(attackScores[i].attackDifference) + ((Math.abs(attackScores[i].attackDifference) === attackScores[i].attackDifference) ? " Place" + (attackScores[i].attackDifference !== 1 ? "s" : "") + " Higher" : " Place" + (attackScores[i].attackDifference !== -1 ? "s" : "") + " Lower")})`;
+              }
+
               client.channels.cache.get("709784763858288681").send({embed: {
                 color: 16777215,
-                description: "@everyone\n\nWar has ended! [in the future, stats about the war will be seen here]"
+                description: `@everyone\n\nWar has ended!\n\nFinal Result: ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")}!)\nDestruction Percentage: ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\nAttacks: ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\nAverage Stars: ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\nAverage Percent: ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\nTop Attackers:\n${topAttacks}`
               }});
-              // TODO: send war info, such as stars + who won + best attacker, etc.
               ref.warHistory.push(warData);
-              ref.war.child("state").set("notInWar");
+              ref.warNotifs.child("4_warEnd").set(true);
+            }
+          break;
+          case "warEnded":
+            var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
+            var curTime = new Date().getTime();
+            if (!warNotifs["4_warEnd"] && curTime >= warEndTime + (4 * 60 * 1000)) { // War has ended
+              console.log("war ended"); // TOOD
+              let clanPercent = 0;
+              for (let i = 0; i < warData.clan.members.length; i++) {
+                if (warData.clan.members[i].attacks) {
+                  for (let j = 0; j < warData.clan.members[i].attacks.length; j++) {
+                    clanPercent += warData.clan.members[i].attacks[j].destructionPercentage;
+                  }
+                }
+              }
+
+              let opponentPercent = 0;
+              for (let i = 0; i < warData.opponent.members.length; i++) {
+                if (warData.opponent.members[i].attacks) {
+                  for (let j = 0; j < warData.opponent.members[i].attacks.length; j++) {
+                    opponentPercent += warData.opponent.members[i].attacks[j].destructionPercentage;
+                  }
+                }
+              }
+
+              let attackScores = [];
+              for (let i = 0; i < warData.clan.members.length; i++) {
+                attackScores.push({
+                  name: warData.clan.members[i].name,
+                  score: 0,
+                  stars: 0,
+                  percentage: 0,
+                  attackDifference: 0
+                });
+                if (warData.clan.members[i].attacks) {
+                  for (let j = 0; j < warData.clan.members[i].attacks.length; j++) {
+                    let attack = warData.clan.members[i].attacks[j]; // 10 is max              up to here v    Account for placement difference                                                             v reduce impact
+                    attackScores[i].score += (attack.stars + 1) * (attack.destructionPercentage / 100) * (10 / 8) + (warData.clan.members[i].mapPosition - getDefenderMapPosition(warData, attack.defenderTag)) / (warData.teamSize / 2);
+                    attackScores[i].stars += attack.stars;
+                    attackScores[i].percentage += attack.destructionPercentage;
+                    attackScores[i].attackDifference += warData.clan.members[i].mapPosition - getDefenderMapPosition(warData, attack.defenderTag);
+                  }
+                }
+              }
+
+              quicksort(attackScores, 0, attackScores.length - 1, "score");
+
+              let topAttacks = "";
+              for (let i = 0; i < 10; i++) {
+                topAttacks += `\n${(i + 1)}. ${attackScores[i].name}:\n — (${attackScores[i].stars} Stars, ${attackScores[i].percentage}%, Attacked ${Math.abs(attackScores[i].attackDifference) + ((Math.abs(attackScores[i].attackDifference) === attackScores[i].attackDifference) ? " Place" + (attackScores[i].attackDifference !== 1 ? "s" : "") + " Higher" : " Place" + (attackScores[i].attackDifference !== -1 ? "s" : "") + " Lower")})`;
+              }
+
+              client.channels.cache.get("709784763858288681").send({embed: {
+                color: 16777215,
+                description: `@everyone\n\nWar has ended!\n\nFinal Result: ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")}!)\nDestruction Percentage: ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\nAttacks: ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\nAverage Stars: ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\nAverage Percent: ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\nTop Attackers:\n${topAttacks}`
+              }});
+              ref.warHistory.push(warData);
               ref.warNotifs.child("4_warEnd").set(true);
             }
           break;
