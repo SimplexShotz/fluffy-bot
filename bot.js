@@ -485,7 +485,7 @@ setInterval(function() {
                 }
                 let hasToAttack = [];
                 for (let i = 0, members = warData.clan.members, len = members.length; i < len; i++) {
-                  if (members[i].attacks.length < 2 && tagToID[members[i].tag]) { // If they have less than 2 attacks and they are in the Discord server
+                  if ((!members[i].attacks || members[i].attacks.length < 2) && tagToID[members[i].tag]) { // If they have less than 2 attacks and they are in the Discord server
                     hasToAttack.push(tagToID[members[i].tag]);
                   }
                 }
@@ -521,7 +521,7 @@ setInterval(function() {
                 }
                 let hasToAttack = [];
                 for (let i = 0, members = warData.clan.members, len = members.length; i < len; i++) {
-                  if (members[i].attacks.length < 2 && tagToID[members[i].tag]) { // If they have less than 2 attacks and they are in the Discord server
+                  if ((!members[i].attacks || members[i].attacks.length < 2) && tagToID[members[i].tag]) { // If they have less than 2 attacks and they are in the Discord server
                     hasToAttack.push(tagToID[members[i].tag]);
                   }
                 }
