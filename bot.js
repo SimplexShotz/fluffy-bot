@@ -346,7 +346,7 @@ client.on("message", async message => {
               }
               if (warKey) {
                 let warData = warHData[warKey];
-                m = getWarResults(warData, false, n);
+                m = `__**War ${n}: ${warData.clan.name} vs. ${warData.opponent.name}**__\n` + getWarResults(warData, false, n);
               } else {
                 m = "Please enter a valid war number.";
               }
