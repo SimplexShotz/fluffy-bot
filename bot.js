@@ -335,12 +335,71 @@ client.on("message", async message => {
           ref.warHistory.once("value", function(data) {
             let warHData = data.val();
             if (args[1]) {
-              m = "coming soon";
+              let n = 0;
+              let warKey = false;
+              for (let i in warHData) {
+                n++;
+                if (n === args[1]) {
+                  warKey = i;
+                  break;
+                }
+              }
+              if (warKey) {
+                let warData = warHData[warKey];
+                let clanPercent = 0;
+                for (let i = 0; i < warData.clan.members.length; i++) {
+                  if (warData.clan.members[i].attacks) {
+                    for (let j = 0; j < warData.clan.members[i].attacks.length; j++) {
+                      clanPercent += warData.clan.members[i].attacks[j].destructionPercentage;
+                    }
+                  }
+                }
+
+                let opponentPercent = 0;
+                for (let i = 0; i < warData.opponent.members.length; i++) {
+                  if (warData.opponent.members[i].attacks) {
+                    for (let j = 0; j < warData.opponent.members[i].attacks.length; j++) {
+                      opponentPercent += warData.opponent.members[i].attacks[j].destructionPercentage;
+                    }
+                  }
+                }
+
+                let attackScores = [];
+                for (let i = 0; i < warData.clan.members.length; i++) {
+                  attackScores.push({
+                    name: warData.clan.members[i].name,
+                    score: 0,
+                    stars: 0,
+                    percentage: 0,
+                    attackDifference: 0
+                  });
+                  if (warData.clan.members[i].attacks) {
+                    for (let j = 0; j < warData.clan.members[i].attacks.length; j++) {
+                      let attack = warData.clan.members[i].attacks[j]; // 10 is max              up to here v    Account for placement difference                                                             v reduce impact
+                      attackScores[i].score += (attack.stars + 1) * (attack.destructionPercentage / 100) * (10 / 8) + (warData.clan.members[i].mapPosition - getDefenderMapPosition(warData, attack.defenderTag)) / (warData.teamSize / 2);
+                      attackScores[i].stars += attack.stars;
+                      attackScores[i].percentage += attack.destructionPercentage;
+                      attackScores[i].attackDifference += warData.clan.members[i].mapPosition - getDefenderMapPosition(warData, attack.defenderTag);
+                    }
+                  }
+                }
+
+                quicksort(attackScores, 0, attackScores.length - 1, "score");
+
+                let topAttacks = "";
+                for (let i = 0; i < 10; i++) {
+                  topAttacks += `\n${(i + 1)}. ${attackScores[i].name}:\n — (${attackScores[i].stars} Stars, ${attackScores[i].percentage}%, Attacked ${Math.abs(attackScores[i].attackDifference) + ((Math.abs(attackScores[i].attackDifference) === attackScores[i].attackDifference) ? " Place" + (attackScores[i].attackDifference !== 1 ? "s" : "") + " Higher" : " Place" + (attackScores[i].attackDifference !== -1 ? "s" : "") + " Lower")})`;
+                }
+
+                m = `**War ${n}: ${warData[i].clan.name} _vs._ ${warData[i].opponent.name}**\nFinal Result: ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")}!)\nDestruction Percentage: ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\nAttacks: ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\nAverage Stars: ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\nAverage Percent: ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\nTop Attackers:\n${topAttacks}`;
+              } else {
+                m = "Please enter a valid war number.";
+              }
             } else {
               m = "**War History:**";
-              var n = 1;
+              let n = 1;
               for (let i in warHData) {
-                m += `\nWar ${n}: ${warHData[i].clan.name} vs. ${warHData[i].opponent.name} | ${warHData[i].clan.stars} — ${warHData[i].opponent.stars} (War ${((warHData[i].clan.stars > warHData[i].opponent.stars) || (warHData[i].clan.stars === warHData[i].opponent.stars && warHData[i].clan.destructionPercentage > warHData[i].opponent.destructionPercentage)) ? ("Won") : ((warHData[i].clan.stars === warHData[i].opponent.stars && warHData[i].clan.destructionPercentage === warHData[i].opponent.destructionPercentage) ? "Drawn" : "Lost")})`;
+                m += `\nWar ${n}: ${warHData[i].clan.name} _vs._ ${warHData[i].opponent.name} | ${warHData[i].clan.stars} — ${warHData[i].opponent.stars} (War ${((warHData[i].clan.stars > warHData[i].opponent.stars) || (warHData[i].clan.stars === warHData[i].opponent.stars && warHData[i].clan.destructionPercentage > warHData[i].opponent.destructionPercentage)) ? ("Won") : ((warHData[i].clan.stars === warHData[i].opponent.stars && warHData[i].clan.destructionPercentage === warHData[i].opponent.destructionPercentage) ? "Drawn" : "Lost")})`;
                 n++;
               }
               m += "\n\nUse _!war history <war number>_ to get more details about a specific war.";
