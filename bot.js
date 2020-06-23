@@ -341,7 +341,7 @@ client.on("message", async message => {
                 n++;
                 console.log(n);
                 console.log(args[1]);
-                if (n === args[1]) {
+                if (n === Number(args[1])) {
                   warKey = i;
                   break;
                 }
