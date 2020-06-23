@@ -528,17 +528,7 @@ setInterval(function() {
         let warNotifs = data.val();
         switch (warData.state) {
           case "notInWar":
-            let newWarNotifs = {
-              "0_preparationAboutToEnd": false,
-              "1_warBegin": false,
-              "2-R_attackReminderReload": false,
-              "2_attackReminder": false,
-              "3-R_warAboutToEndReload": false,
-              "3_warAboutToEnd": false,
-              "4-R_warEndReload": false,
-              "4_warEnd": false
-            };
-            ref.warNotifs.set(newWarNotifs);
+            // do nothing
           break;
           case "preparation":
             var preparationEndTime = new Date(convertToValidDate(warData.startTime)).getTime();
@@ -548,7 +538,17 @@ setInterval(function() {
                 color: 16777215,
                 description: "@everyone\n\nWar Preparation is going to end in less than 2 hours! Make sure to donate!"
               }});
-              ref.warNotifs.child("0_preparationAboutToEnd").set(true);
+              let newWarNotifs = {
+                "0_preparationAboutToEnd": true,
+                "1_warBegin": false,
+                "2-R_attackReminderReload": false,
+                "2_attackReminder": false,
+                "3-R_warAboutToEndReload": false,
+                "3_warAboutToEnd": false,
+                "4-R_warEndReload": false,
+                "4_warEnd": false
+              };
+              ref.warNotifs.set(newWarNotifs);
             }
             if (!warNotifs["1_warBegin"] && curTime >= preparationEndTime) { // Preparation has ended
               client.channels.cache.get("709784763858288681").send({embed: {
@@ -690,7 +690,18 @@ setInterval(function() {
                 description: `@everyone\n\nWar has ended!\n\nFinal Result: ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")}!)\nDestruction Percentage: ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\nAttacks: ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\nAverage Stars: ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\nAverage Percent: ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\nTop Attackers:\n${topAttacks}`
               }});
               ref.warHistory.push(warData);
-              ref.warNotifs.child("4_warEnd").set(true);
+              // ref.warNotifs.child("4_warEnd").set(true);
+              let newWarNotifs = {
+                "0_preparationAboutToEnd": false,
+                "1_warBegin": false,
+                "2-R_attackReminderReload": false,
+                "2_attackReminder": false,
+                "3-R_warAboutToEndReload": false,
+                "3_warAboutToEnd": false,
+                "4-R_warEndReload": false,
+                "4_warEnd": true
+              };
+              ref.warNotifs.set(newWarNotifs);
             }
           break;
           case "warEnded":
@@ -748,7 +759,18 @@ setInterval(function() {
                 description: `@everyone\n\nWar has ended!\n\nFinal Result: ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")}!)\nDestruction Percentage: ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\nAttacks: ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\nAverage Stars: ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\nAverage Percent: ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\nTop Attackers:\n${topAttacks}`
               }});
               ref.warHistory.push(warData);
-              ref.warNotifs.child("4_warEnd").set(true);
+              // ref.warNotifs.child("4_warEnd").set(true);
+              let newWarNotifs = {
+                "0_preparationAboutToEnd": false,
+                "1_warBegin": false,
+                "2-R_attackReminderReload": false,
+                "2_attackReminder": false,
+                "3-R_warAboutToEndReload": false,
+                "3_warAboutToEnd": false,
+                "4-R_warEndReload": false,
+                "4_warEnd": true
+              };
+              ref.warNotifs.set(newWarNotifs);
             }
           break;
         }
