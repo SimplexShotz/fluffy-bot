@@ -339,6 +339,8 @@ client.on("message", async message => {
               let warKey = false;
               for (let i in warHData) {
                 n++;
+                console.log(n);
+                console.log(args[1]);
                 if (n === args[1]) {
                   warKey = i;
                   break;
