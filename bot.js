@@ -346,7 +346,7 @@ client.on("message", async message => {
               }
               if (warKey) {
                 let warData = warHData[warKey];
-                m = `__**War ${n}: ${warData.clan.name} vs. ${warData.opponent.name}**__\n` + getWarResults(warData, false, n);
+                m = getWarResults(warData, false, n).message;
               } else {
                 m = "Please enter a valid war number.";
               }
@@ -504,7 +504,10 @@ function getWarResults(warData, isAnnouncement, n) {
     topAttacks += `\n__${(i + 1)}. ${attackScores[i].name}:__\n${attackScores[i].stars} Stars, ${attackScores[i].percentage}%, Attacked ${Math.abs(attackScores[i].attackDifference) + ((Math.abs(attackScores[i].attackDifference) === attackScores[i].attackDifference) ? " Place" + (attackScores[i].attackDifference !== 1 ? "s" : "") + " Higher" : " Place" + (attackScores[i].attackDifference !== -1 ? "s" : "") + " Lower")}`;
   }
 
-  return (isAnnouncement ? (`__**War ${n}: ${warData.clan.name} vs. ${warData.opponent.name}**__\n`) : ("")) + `**Final Result:** ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")})\n**Destruction Percentage:** ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\n**Attacks:** ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\n**Average Stars:** ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\n**Average Percent:** ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\n**Top Attackers:**${topAttacks}`;
+  return {
+    message: (isAnnouncement ? ("") : (`__**War ${n}:**__ `)) + `__**${warData.clan.name} vs. ${warData.opponent.name}**__\n**Final Result:** ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")})\n**Destruction Percentage:** ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\n**Attacks:** ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\n**Average Stars:** ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\n**Average Percent:** ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\n**Top Attackers:**${topAttacks}`,
+    attackScores: attackScores
+  };
 }
 
 function getAttacksLeft(warData, userData) {
@@ -647,7 +650,7 @@ setInterval(function() {
               // Send the announcement:
               client.channels.cache.get("709784763858288681").send({embed: {
                 color: 16777215,
-                description: `@everyone\n\nWar has ended!\n\n${warResults}`
+                description: `@everyone\n\nWar has ended!\n\n${warResults.message}`
               }});
               // Save the war to war history:
               ref.warHistory.push(warData);
@@ -676,7 +679,7 @@ setInterval(function() {
               // Send the announcement:
               client.channels.cache.get("709784763858288681").send({embed: {
                 color: 16777215,
-                description: `@everyone\n\nWar has ended!\n\n${warResults}`
+                description: `@everyone\n\nWar has ended!\n\n${warResults.message}`
               }});
               // Save the war to war history:
               ref.warHistory.push(warData);
