@@ -119,7 +119,7 @@ client.on("message", async message => {
     break;
     case "connect":
       if (args[0] && args[0].charAt(0) === "#") { // If player tag was specified
-        var user = (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? args[1].substring(3, args[1].length - 1) : (args[1] && args[1].substring(0, 2) === "<@" && args[1][args[1].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? args[1].substring(2, args[1].length - 1) : message.author.id);
+        var user = (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? (args[1].substring(3, args[1].length - 1)) : ((args[1] && args[1].substring(0, 2) === "<@" && args[1][args[1].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? (args[1].substring(2, args[1].length - 1)) : (message.author.id));
         ref.users.once("value", function(data) {
           var d = data.val();
           if (d[user]) {
