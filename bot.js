@@ -337,7 +337,6 @@ client.on("message", async message => {
               if (warKey) {
                 let warData = warHData[warKey];
                 m = getWarResults(warData, false, n).message;
-                console.log(getWarResults(warData, false, n).attackScores);
               } else {
                 m = "Please enter a valid war number.";
               }
@@ -478,7 +477,8 @@ function getWarResults(warData, isAnnouncement, n) {
       score: 0,
       stars: 0,
       percentage: 0,
-      attackDifference: 0
+      attackDifference: 0,
+      attacks: 0
     });
     if (warData.clan.members[i].attacks) {
       for (let j = 0; j < warData.clan.members[i].attacks.length; j++) {
@@ -487,6 +487,7 @@ function getWarResults(warData, isAnnouncement, n) {
         attackScores[i].stars += attack.stars;
         attackScores[i].percentage += attack.destructionPercentage;
         attackScores[i].attackDifference += warData.clan.members[i].mapPosition - getDefenderMapPosition(warData, attack.defenderTag);
+        attackScores[i].attacks++;
       }
     }
   }
@@ -499,7 +500,7 @@ function getWarResults(warData, isAnnouncement, n) {
   }
 
   return {
-    message: (isAnnouncement ? ("") : (`__**War ${n}:**__ `)) + `__**${warData.clan.name} vs. ${warData.opponent.name}**__\n**Final Result:** ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")})\n**Destruction Percentage:** ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\n**Attacks:** ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\n**Average Stars:** ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\n**Average Percent:** ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\n**Top Attackers:**${topAttacks}`,
+    message: (isAnnouncement ? ("") : (`__**War ${n}: **__`)) + `__**${warData.clan.name} vs. ${warData.opponent.name}**__\n**Final Result:** ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")})\n**Destruction Percentage:** ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\n**Attacks:** ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\n**Average Stars:** ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\n**Average Percent:** ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\n**Top Attackers:**${topAttacks}`,
     attackScores: attackScores
   };
 }
@@ -678,7 +679,19 @@ setInterval(function() {
                 let tagToID = getTagToIDObject(userData);
                 for (let i = 0; i < warResults.attackScores; i++) {
                   if (tagToID[warResults.attackScores[i].tag]) { // Check if they have a discord account connected
-
+                    if (warResults.attackScores[i].score > 0) { // Score was > 0
+                      ref.users.child(tagToID[warResults.attackScores[i].tag]).child("currency").set(userData[tagToID[warResults.attackScores[i].tag]].currency + Math.round(warResults.attackScores[i].score * 10));
+                      client.users.cache.get(tagToID[warResults.attackScores[i].tag]).send({embed: {
+                        color: 16777215,
+                        description: `You recieved $${Math.round(warResults.attackScores[i].score * 10)} for your war attacks! You placed #${i + 1} compared to other attackers!`
+                      }});
+                    }
+                    if (warResults.attackScores[i].attacks === 0) { // Player did not attack
+                      client.users.cache.get(tagToID[warResults.attackScores[i].tag]).send({embed: {
+                        color: 16777215,
+                        description: `You forgot to attack in war! Please opt out if you will be unable to attack in the next war.`
+                      }});
+                    }
                   }
                 }
               });
