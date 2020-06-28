@@ -119,15 +119,7 @@ client.on("message", async message => {
     break;
     case "connect":
       if (args[0] && args[0].charAt(0) === "#") { // If player tag was specified
-        if (args[1]) { // debug
-          console.log("CONNECT DEBUG");
-          console.log(args[1]);
-          console.log(args[1].substring(0, 3));
-          console.log(args[1][args[1].length - 1]);
-          console.log(message.member.roles.cache.find(role => role.name === "Leader"));
-          console.log(args[1].substring(3, args[1].length - 1));
-        }
-        var user = (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? args[1].substring(3, args[1].length - 1) : message.author.id;
+        var user = (args[1] && args[1].substring(0, 3) === "<@!" && args[1][args[1].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? args[1].substring(3, args[1].length - 1) : (args[1] && args[1].substring(0, 2) === "<@" && args[1][args[1].length - 1] === ">" && message.member.roles.cache.find(role => role.name === "Leader")) ? args[1].substring(2, args[1].length - 1) : message.author.id);
         ref.users.once("value", function(data) {
           var d = data.val();
           if (d[user]) {
@@ -151,8 +143,6 @@ client.on("message", async message => {
               uri: "https://api.clashofclans.com/v1/players/%23" + args[0].substring(1, args[0].length)
             }, async function(err, res, body) {
               body = JSON.parse(body);
-              console.log(body);
-              console.log(res.statusCode);
               if (res.statusCode === 200) { // Successful
                 if (body.name) { // Account exists
                   if (body.clan.tag === "#PQG920LC") { // In clan:
@@ -347,6 +337,7 @@ client.on("message", async message => {
               if (warKey) {
                 let warData = warHData[warKey];
                 m = getWarResults(warData, false, n).message;
+                console.log(getWarResults(warData, false, n).attackScores);
               } else {
                 m = "Please enter a valid war number.";
               }
@@ -368,7 +359,6 @@ client.on("message", async message => {
       }
     break;
     case "test":
-      // message.member.roles.add(roles.leader);
       console.log(args);
       m = "Test complete.";
     break;
@@ -435,7 +425,7 @@ function convertToValidDate(cocDate) {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}.000Z`;
 }
 
-function updateWar() {
+function updateWar(callback) {
   fixieRequest({
     headers: {
       Accept: "application/json",
@@ -446,6 +436,9 @@ function updateWar() {
     body = JSON.parse(body);
     if (res.statusCode === 200) { // Successful
       ref.war.set(body);
+      if (callback) {
+        callback();
+      }
     }
   }); // end request
 }
@@ -480,6 +473,7 @@ function getWarResults(warData, isAnnouncement, n) {
   let attackScores = [];
   for (let i = 0; i < warData.clan.members.length; i++) {
     attackScores.push({
+      tag: warData.clan.members[i].tag,
       name: warData.clan.members[i].name,
       score: 0,
       stars: 0,
@@ -510,7 +504,7 @@ function getWarResults(warData, isAnnouncement, n) {
   };
 }
 
-function getAttacksLeft(warData, userData) {
+function getTagToIDObject(userData) {
   // Get the user ID of each player and map them to their tag:
   let tagToID = {};
   for (let i in userData) {
@@ -518,6 +512,12 @@ function getAttacksLeft(warData, userData) {
       tagToID[userData[i].tag] = i;
     }
   }
+  return tagToID;
+}
+
+function getAttacksLeft(warData, userData) {
+  // Get the user ID of each player and map them to their tag:
+  let tagToID = getTagToIDObject(userData);
   // Get all the users that have to attack:
   let hasToAttack = [];
   for (let i = 0, members = warData.clan.members, len = members.length; i < len; i++) {
@@ -639,40 +639,16 @@ setInterval(function() {
               ref.warNotifs.child("3_warAboutToEnd").set(true);
             }
             if (!warNotifs["4-R_warEndReload"] && curTime >= warEndTime + (3 * 60 * 1000)) { // Reload war status 1 min before next reminder
-              updateWar();
+              updateWar(function() {
+                ref.war.child("state").set("warEnded");
+              });
               ref.warNotifs.child("4-R_warEndReload").set(true);
-            }
-            if (!warNotifs["4_warEnd"] && curTime >= warEndTime + (4 * 60 * 1000)) { // War has ended
-              console.log("war not ended"); // TODO
-              // Get the results of the war in text format:
-              const warResults = getWarResults(warData, true);
-
-              // Send the announcement:
-              client.channels.cache.get("709784763858288681").send({embed: {
-                color: 16777215,
-                description: `@everyone\n\nWar has ended!\n\n${warResults.message}`
-              }});
-              // Save the war to war history:
-              ref.warHistory.push(warData);
-              // Update notification status:
-              let newWarNotifs = {
-                "0_preparationAboutToEnd": false,
-                "1_warBegin": false,
-                "2-R_attackReminderReload": true,
-                "2_attackReminder": true,
-                "3-R_warAboutToEndReload": true,
-                "3_warAboutToEnd": true,
-                "4-R_warEndReload": true,
-                "4_warEnd": true
-              };
-              ref.warNotifs.set(newWarNotifs);
             }
           break;
           case "warEnded":
             var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
             var curTime = new Date().getTime();
             if (!warNotifs["4_warEnd"] && curTime >= warEndTime + (4 * 60 * 1000)) { // War has ended
-              console.log("warEnded"); // TODO
               // Get the results of the war in text format:
               const warResults = getWarResults(warData, true);
 
@@ -695,6 +671,17 @@ setInterval(function() {
                 "4_warEnd": true
               };
               ref.warNotifs.set(newWarNotifs);
+              // Give people their moolah based on their attack position:
+              ref.users.once("value", function(data) {
+                let userData = data.val();
+
+                let tagToID = getTagToIDObject(userData);
+                for (let i = 0; i < warResults.attackScores; i++) {
+                  if (tagToID[warResults.attackScores[i].tag]) { // Check if they have a discord account connected
+
+                  }
+                }
+              });
             }
           break;
         }
