@@ -677,7 +677,7 @@ setInterval(function() {
                 let userData = data.val();
 
                 let tagToID = getTagToIDObject(userData);
-                for (let i = 0; i < warResults.attackScores; i++) {
+                for (let i = 0; i < warResults.attackScores.length; i++) {
                   if (tagToID[warResults.attackScores[i].tag]) { // Check if they have a discord account connected
                     if (warResults.attackScores[i].score > 0) { // Score was > 0
                       ref.users.child(tagToID[warResults.attackScores[i].tag]).child("currency").set(userData[tagToID[warResults.attackScores[i].tag]].currency + Math.round(warResults.attackScores[i].score * 10));
