@@ -509,7 +509,7 @@ function getAllWarResults(warHData, numberOfWarsToAverage) {
   let n = 0;
   for (let i in warHData) {
     if (n >= totalWars - numberOfWarsToAverage) {
-      let warResults = getWarResults(warData).attackScores;
+      let warResults = getWarResults(warHData[i]).attackScores;
       for (let j = 0; j < warResults.length; j++) {
         if (!allWarResults[warResults[j].tag]) {
           allWarResults[warResults[j].tag] = {
