@@ -396,10 +396,7 @@ client.on("message", async message => {
             }
 
             // Send the results as a message:
-            message.channel.send({embed: {
-              color: 16777215,
-              description: m
-            }});
+            message.channel.send(m);
           });
         break;
       }
