@@ -355,6 +355,53 @@ client.on("message", async message => {
             }});
           });
         break;
+        case "best":
+          // Get the war history data:
+          ref.warHistory.once("value", function(data) {
+            let warHData = data.val();
+
+            // Determine how many of the most recent wars to average:
+            let totalWars = 0;
+            for (let i in warHData) {
+              totalWars++;
+            }
+            let numberOfWarsToAverage = totalWars;
+            if (Number(args[1]) && Number(args[1]) > 0) {
+              numberOfWarsToAverage = Math.min(Number(args[1]), totalWars);
+            }
+
+            // Get the results for those wars:
+            let allWarResults = getAllWarResults(warHData, numberOfWarsToAverage);
+
+            // Normalize all of the war results, based on how many wars each player was in:
+            let allWarResultsNormalized = [];
+            for (let i = 0; i < allWarResults.length; i++) {
+              allWarResultsNormalized.push({
+                tag: allWarResults[i].tag,
+                name: allWarResults[i].name,
+                score: allWarResults[i].score / allWarResults[i].wars,
+                stars: allWarResults[i].stars / allWarResults[i].wars,
+                percentage: allWarResults[i].percentage / allWarResults[i].wars,
+                attackDifference: allWarResults[i].attackDifference / allWarResults[i].wars
+              });
+            }
+
+            // Sort the results based on score:
+            quicksort(allWarResultsNormalized, 0, allWarResultsNormalized.length - 1, "score");
+
+            // Format the results:
+            let m = "__**Avarage War Attack Ratings:**__";
+            for (let i = 0; i < allWarResultsNormalized.length; i++) {
+              m += `\n__${i + 1}. ${allWarResultsNormalized[i].name}:__\n${allWarResultsNormalized[i].stars} Stars, ${allWarResultsNormalized[i].percentage}%, Attacked ${Math.abs(allWarResultsNormalized[i].attackDifference)} Place${Math.abs(allWarResultsNormalized[i].attackDifference) !== 1 ? "s" : ""} ${Math.abs(allWarResultsNormalized[i].attackDifference) === allWarResultsNormalized[i].attackDifference ? "Higher" : "Lower"}`;
+            }
+
+            // Send the results as a message:
+            message.channel.send({embed: {
+              color: 16777215,
+              description: m
+            }});
+          });
+        break;
       }
     break;
     case "test":
@@ -450,7 +497,58 @@ function getDefenderMapPosition(wd, tag) {
   }
 }
 
+function getAllWarResults(warHData, numberOfWarsToAverage) {
+  // Find the total number of wars:
+  let totalWars = 0;
+  for (let i in warHData) {
+    totalWars++;
+  }
+
+  // Get all war results:
+  let allWarResults = {};
+  let n = 0;
+  for (let i in warHData) {
+    if (n >= totalWars - numberOfWarsToAverage) {
+      let warResults = getWarResults(warData).attackScores;
+      for (let j = 0; j < warResults.length; j++) {
+        if (!allWarResults[warResults[j].tag]) {
+          allWarResults[warResults[j].tag] = {
+            tag: warResults[j].tag,
+            name: warResults[j].name,
+            score: 0,
+            stars: 0,
+            percentage: 0,
+            attackDifference: 0,
+            wars: 0
+          };
+        }
+        allWarResults[warResults[j].tag].score += warResults[j].score;
+        allWarResults[warResults[j].tag].stars += warResults[j].stars;
+        allWarResults[warResults[j].tag].percentage += warResults[j].percentage;
+        allWarResults[warResults[j].tag].attackDifference += warResults[j].attackDifference;
+        allWarResults[warResults[j].tag].wars++;
+      }
+    }
+    n++;
+  }
+
+  // Sort all war results by score:
+
+  // Start by transferring the data into an array:
+  let allWarResultsFinal = [];
+  for (let i in allWarResults) {
+    allWarResultsFinal.push(allWarResults[i]);
+  }
+
+  // Then sort it:
+  quicksort(allWarResultsFinal, 0, allWarResultsFinal.length - 1, "score");
+
+  // Return the sorted, finalized results:
+  return allWarResultsFinal;
+}
+
 function getWarResults(warData, isAnnouncement, n) {
+  // Get the total clan percent; used for the average
   let clanPercent = 0;
   for (let i = 0; i < warData.clan.members.length; i++) {
     if (warData.clan.members[i].attacks) {
@@ -460,6 +558,7 @@ function getWarResults(warData, isAnnouncement, n) {
     }
   }
 
+  // Get the total opponent percent; used for the average
   let opponentPercent = 0;
   for (let i = 0; i < warData.opponent.members.length; i++) {
     if (warData.opponent.members[i].attacks) {
@@ -469,6 +568,7 @@ function getWarResults(warData, isAnnouncement, n) {
     }
   }
 
+  // Create and populate the attack scores:
   let attackScores = [];
   for (let i = 0; i < warData.clan.members.length; i++) {
     attackScores.push({
@@ -492,15 +592,18 @@ function getWarResults(warData, isAnnouncement, n) {
     }
   }
 
+  // Sort the attack scores by score:
   quicksort(attackScores, 0, attackScores.length - 1, "score");
 
+  // Get the top attacks text:
   let topAttacks = "";
   for (let i = 0; i < 10; i++) {
-    topAttacks += `\n__${(i + 1)}. ${attackScores[i].name}:__\n${attackScores[i].stars} Stars, ${attackScores[i].percentage}%, Attacked ${Math.abs(attackScores[i].attackDifference) + ((Math.abs(attackScores[i].attackDifference) === attackScores[i].attackDifference) ? " Place" + (attackScores[i].attackDifference !== 1 ? "s" : "") + " Higher" : " Place" + (attackScores[i].attackDifference !== -1 ? "s" : "") + " Lower")}`;
+    topAttacks += `\n__${(i + 1)}. ${attackScores[i].name}:__\n${attackScores[i].stars} Stars, ${attackScores[i].percentage}%, Attacked ${Math.abs(attackScores[i].attackDifference)} Place${Math.abs(attackScores[i].attackDifference) !== 1 ? "s" : ""} ${Math.abs(attackScores[i].attackDifference) === attackScores[i].attackDifference ? "Higher" : "Lower"}`;
   }
 
+  // Return the message and sorted attack scores:
   return {
-    message: (isAnnouncement ? ("") : (`__**War ${n}: **__`)) + `__**${warData.clan.name} vs. ${warData.opponent.name}**__\n**Final Result:** ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")})\n**Destruction Percentage:** ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\n**Attacks:** ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\n**Average Stars:** ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\n**Average Percent:** ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\n**Top Attackers:**${topAttacks}`,
+    message: `__**` + (isAnnouncement ? ("") : (`War ${n}: `)) + `${warData.clan.name} vs. ${warData.opponent.name}**__\n**Final Result:** ${warData.clan.stars} — ${warData.opponent.stars} (War ${((warData.clan.stars > warData.opponent.stars) || (warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage > warData.opponent.destructionPercentage)) ? ("Won") : ((warData.clan.stars === warData.opponent.stars && warData.clan.destructionPercentage === warData.opponent.destructionPercentage) ? "Drawn" : "Lost")})\n**Destruction Percentage:** ${Math.round(warData.clan.destructionPercentage * 100) / 100}% — ${Math.round(warData.opponent.destructionPercentage * 100) / 100}%\n**Attacks:** ${warData.clan.attacks}/${warData.teamSize * 2} — ${warData.opponent.attacks}/${warData.teamSize * 2}\n\n**Average Stars:** ${Math.round(warData.clan.stars / warData.clan.attacks * 100) / 100} — ${Math.round(warData.opponent.stars / warData.opponent.attacks * 100) / 100}\n**Average Percent:** ${Math.round(clanPercent / warData.clan.attacks * 100) / 100}% — ${Math.round(opponentPercent / warData.opponent.attacks * 100) / 100}%\n\n**Top Attackers:**${topAttacks}`,
     attackScores: attackScores
   };
 }
