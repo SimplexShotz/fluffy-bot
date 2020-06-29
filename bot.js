@@ -396,7 +396,7 @@ client.on("message", async message => {
             }
 
             // Send the results as a message:
-            message.channel.send(m);
+            sendEmbeds(m, message.channel);
           });
         break;
       }
@@ -628,6 +628,18 @@ function getAttacksLeft(warData, userData) {
   }
   // Return the array:
   return hasToAttack;
+}
+
+async function sendEmbeds(text, channel) {
+  // from https://stackoverflow.com/questions/55818959/richembed-descriptions-may-not-exceed-2048-characters
+  const arr = text.match(/.{1,2048}/g); // Build the array
+
+  for (let chunk of arr) { // Loop through every element
+    await channel.send({embed: {
+      color: 16777215,
+      description: chunk
+    }}); // Wait for the embed to be sent
+  }
 }
 
 setInterval(function() {
