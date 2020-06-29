@@ -392,11 +392,11 @@ client.on("message", async message => {
             // Format the results:
             let m = "__**Avarage War Attack Ratings:**__";
             for (let i = 0; i < allWarResultsNormalized.length; i++) {
-              m += `\n__${i + 1}. ${allWarResultsNormalized[i].name}:__\n${allWarResultsNormalized[i].stars} Stars, ${allWarResultsNormalized[i].percentage}%, Attacked ${Math.abs(allWarResultsNormalized[i].attackDifference)} Place${Math.abs(allWarResultsNormalized[i].attackDifference) !== 1 ? "s" : ""} ${Math.abs(allWarResultsNormalized[i].attackDifference) === allWarResultsNormalized[i].attackDifference ? "Higher" : "Lower"}`;
+              m += `\n__${i + 1}. ${allWarResultsNormalized[i].name}:__\n${Math.round(allWarResultsNormalized[i].stars * 100) / 100} Stars, ${Math.round(allWarResultsNormalized[i].percentage * 100) / 100}%, Attacked ${Math.abs(allWarResultsNormalized[i].attackDifference)} Place${Math.abs(allWarResultsNormalized[i].attackDifference) !== 1 ? "s" : ""} ${Math.abs(allWarResultsNormalized[i].attackDifference) === allWarResultsNormalized[i].attackDifference ? "Higher" : "Lower"}`;
             }
 
             // Send the results as a message:
-            sendEmbeds(m, message.channel);
+            sendEmbeds(m, message.channel); // TODO: CHECK IF THEY ARE STILL EVEN IN THE CLAN!!
           });
         break;
       }
@@ -631,14 +631,24 @@ function getAttacksLeft(warData, userData) {
 }
 
 async function sendEmbeds(text, channel) {
-  // from https://stackoverflow.com/questions/55818959/richembed-descriptions-may-not-exceed-2048-characters
-  const arr = text.match(/.{1,2048}/g); // Build the array
-
-  for (let chunk of arr) { // Loop through every element
+  // adapted from https://stackoverflow.com/questions/55818959/richembed-descriptions-may-not-exceed-2048-characters
+  let done = false;
+  let i = 0;
+  while (!done) {
+    // Find the end of this bit:
+    let end = i;
+    for (let j = i + 2000; j > i; j--) {
+      if (text[j] === "\n") {
+        end = j;
+        break;
+      }
+    }
+    let chunk = text.substring(i, end - i);
     await channel.send({embed: {
       color: 16777215,
       description: chunk
     }}); // Wait for the embed to be sent
+    i = end;
   }
 }
 
