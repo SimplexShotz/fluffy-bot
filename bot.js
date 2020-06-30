@@ -390,7 +390,7 @@ client.on("message", async message => {
             quicksort(allWarResultsNormalized, 0, allWarResultsNormalized.length - 1, "score");
 
             // Format the results:
-            let m = "__**Avarage War Attack Ratings:**__";
+            let m = `__**Average War Ratings (Past ${Number(args[1])} War${Number(args[1]) !== 1 ? "s" : ""}):**__`;
             for (let i = 0; i < allWarResultsNormalized.length; i++) {
               m += `\n__${i + 1}. ${allWarResultsNormalized[i].name}:__\n${Math.round(allWarResultsNormalized[i].stars * 100) / 100} Stars, ${Math.round(allWarResultsNormalized[i].percentage * 100) / 100}%, Attacked ${Math.round(Math.abs(allWarResultsNormalized[i].attackDifference) * 100) / 100} Place${Math.abs(allWarResultsNormalized[i].attackDifference) !== 1 ? "s" : ""} ${Math.abs(allWarResultsNormalized[i].attackDifference) === allWarResultsNormalized[i].attackDifference ? "Higher" : "Lower"}`;
             }
@@ -645,10 +645,6 @@ async function sendEmbeds(m, channel) {
     } else {
       end = m.length;
     }
-    console.log(i);
-    console.log(end);
-    console.log(end - i);
-    console.log(m.length);
     let chunk = m.substring(i, end);
     await channel.send({embed: {
       color: 16777215,
