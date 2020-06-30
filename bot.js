@@ -630,20 +630,22 @@ function getAttacksLeft(warData, userData) {
   return hasToAttack;
 }
 
-async function sendEmbeds(text, channel) {
-  // adapted from https://stackoverflow.com/questions/55818959/richembed-descriptions-may-not-exceed-2048-characters
-  let done = false;
+async function sendEmbeds(m, channel) {
   let i = 0;
-  while (!done) {
+  while (i < m.length) {
     // Find the end of this bit:
     let end = i;
-    for (let j = i + 2000; j > i; j--) {
-      if (text[j] === "\n") {
-        end = j;
-        break;
+    if (i + 2000 < m.length) {
+      for (let j = i + 2000; j > i; j--) {
+        if (m[j] === "\n") {
+          end = j;
+          break;
+        }
       }
+    } else {
+      end = m.length - 1;
     }
-    let chunk = text.substring(i, end - i);
+    let chunk = m.substring(i, end - i);
     await channel.send({embed: {
       color: 16777215,
       description: chunk
