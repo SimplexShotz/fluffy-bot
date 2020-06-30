@@ -645,6 +645,10 @@ async function sendEmbeds(m, channel) {
     } else {
       end = m.length - 1;
     }
+    console.log(i);
+    console.log(end);
+    console.log(end - i);
+    console.log(m.length);
     let chunk = m.substring(i, end - i);
     await channel.send({embed: {
       color: 16777215,
