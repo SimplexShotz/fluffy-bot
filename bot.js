@@ -392,7 +392,7 @@ client.on("message", async message => {
             // Format the results:
             let m = "__**Avarage War Attack Ratings:**__";
             for (let i = 0; i < allWarResultsNormalized.length; i++) {
-              m += `\n__${i + 1}. ${allWarResultsNormalized[i].name}:__\n${Math.round(allWarResultsNormalized[i].stars * 100) / 100} Stars, ${Math.round(allWarResultsNormalized[i].percentage * 100) / 100}%, Attacked ${Math.abs(allWarResultsNormalized[i].attackDifference)} Place${Math.abs(allWarResultsNormalized[i].attackDifference) !== 1 ? "s" : ""} ${Math.abs(allWarResultsNormalized[i].attackDifference) === allWarResultsNormalized[i].attackDifference ? "Higher" : "Lower"}`;
+              m += `\n__${i + 1}. ${allWarResultsNormalized[i].name}:__\n${Math.round(allWarResultsNormalized[i].stars * 100) / 100} Stars, ${Math.round(allWarResultsNormalized[i].percentage * 100) / 100}%, Attacked ${Math.round(Math.abs(allWarResultsNormalized[i].attackDifference) * 100) / 100} Place${Math.abs(allWarResultsNormalized[i].attackDifference) !== 1 ? "s" : ""} ${Math.abs(allWarResultsNormalized[i].attackDifference) === allWarResultsNormalized[i].attackDifference ? "Higher" : "Lower"}`;
             }
 
             // Send the results as a message:
@@ -632,7 +632,7 @@ function getAttacksLeft(warData, userData) {
 
 async function sendEmbeds(m, channel) {
   let i = 0;
-  while (i < m.length) {
+  while (i < m.length - 1) {
     // Find the end of this bit:
     let end = i;
     if (i + 2000 < m.length) {
