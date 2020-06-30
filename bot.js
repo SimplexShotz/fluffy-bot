@@ -632,10 +632,10 @@ function getAttacksLeft(warData, userData) {
 
 async function sendEmbeds(m, channel) {
   let i = 0;
-  while (i < m.length - 1) {
+  while (i < m.length) {
     // Find the end of this bit:
     let end = i;
-    if (i + 2000 < m.length) {
+    if (i + 2000 <= m.length) {
       for (let j = i + 2000; j > i; j--) {
         if (m[j] === "\n") {
           end = j;
@@ -643,7 +643,7 @@ async function sendEmbeds(m, channel) {
         }
       }
     } else {
-      end = m.length - 1;
+      end = m.length;
     }
     console.log(i);
     console.log(end);
