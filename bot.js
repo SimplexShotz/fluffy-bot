@@ -457,7 +457,6 @@ function quicksort(arr, lo, hi, by) {
 }
 
 function convertToValidDate(cocDate) {
-  console.log(cocDate);
   var year = cocDate.substring(0, 4);
   var month = cocDate.substring(4, 6);
   var day = cocDate.substring(6, 8);
@@ -772,20 +771,7 @@ setInterval(function() {
             }
           break;
           case "warEnded":
-            console.log(warData);
-            var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
-            var curTime = new Date().getTime();
-            if (!warNotifs["4_warEnd"] && curTime >= warEndTime + (4 * 60 * 1000)) { // War has ended
-              // Get the results of the war in text format:
-              const warResults = getWarResults(warData, true);
-
-              // Send the announcement:
-              client.channels.cache.get("709784763858288681").send({embed: {
-                color: 16777215,
-                description: `@everyone\n\nWar has ended!\n\n${warResults.message}`
-              }});
-              // Save the war to war history:
-              ref.warHistory.push(warData);
+            if (!warData.endTime) {
               // Update notification status:
               let newWarNotifs = {
                 "0_preparationAboutToEnd": false,
@@ -798,29 +784,56 @@ setInterval(function() {
                 "4_warEnd": true
               };
               ref.warNotifs.set(newWarNotifs);
-              // Give people their moolah based on their attack position:
-              ref.users.once("value", function(data) {
-                let userData = data.val();
+            } else {
+              var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
+              var curTime = new Date().getTime();
+              if (!warNotifs["4_warEnd"] && curTime >= warEndTime + (3.1 * 60 * 1000)) { // War has ended
+                // Get the results of the war in text format:
+                const warResults = getWarResults(warData, true);
 
-                let tagToID = getTagToIDObject(userData);
-                for (let i = 0; i < warResults.attackScores.length; i++) {
-                  if (tagToID[warResults.attackScores[i].tag]) { // Check if they have a discord account connected
-                    if (warResults.attackScores[i].score > 0) { // Score was > 0
-                      ref.users.child(tagToID[warResults.attackScores[i].tag]).child("currency").set(userData[tagToID[warResults.attackScores[i].tag]].currency + Math.round(warResults.attackScores[i].score * 10));
-                      client.users.cache.get(tagToID[warResults.attackScores[i].tag]).send({embed: {
-                        color: 16777215,
-                        description: `You recieved $${Math.round(warResults.attackScores[i].score * 10)} for your war attacks! You placed #${i + 1} compared to other attackers!`
-                      }});
-                    }
-                    if (warResults.attackScores[i].attacks === 0) { // Player did not attack
-                      client.users.cache.get(tagToID[warResults.attackScores[i].tag]).send({embed: {
-                        color: 16777215,
-                        description: `You forgot to attack in war! Please opt out if you will be unable to attack in the next war.`
-                      }});
+                // Send the announcement:
+                client.channels.cache.get("709784763858288681").send({embed: {
+                  color: 16777215,
+                  description: `@everyone\n\nWar has ended!\n\n${warResults.message}`
+                }});
+                // Save the war to war history:
+                ref.warHistory.push(warData);
+                // Update notification status:
+                let newWarNotifs = {
+                  "0_preparationAboutToEnd": false,
+                  "1_warBegin": false,
+                  "2-R_attackReminderReload": true,
+                  "2_attackReminder": true,
+                  "3-R_warAboutToEndReload": true,
+                  "3_warAboutToEnd": true,
+                  "4-R_warEndReload": true,
+                  "4_warEnd": true
+                };
+                ref.warNotifs.set(newWarNotifs);
+                // Give people their moolah based on their attack position:
+                ref.users.once("value", function(data) {
+                  let userData = data.val();
+
+                  let tagToID = getTagToIDObject(userData);
+                  for (let i = 0; i < warResults.attackScores.length; i++) {
+                    if (tagToID[warResults.attackScores[i].tag]) { // Check if they have a discord account connected
+                      if (warResults.attackScores[i].score > 0) { // Score was > 0
+                        ref.users.child(tagToID[warResults.attackScores[i].tag]).child("currency").set(userData[tagToID[warResults.attackScores[i].tag]].currency + Math.round(warResults.attackScores[i].score * 10));
+                        client.users.cache.get(tagToID[warResults.attackScores[i].tag]).send({embed: {
+                          color: 16777215,
+                          description: `You recieved $${Math.round(warResults.attackScores[i].score * 10)} for your war attacks! You placed #${i + 1} compared to other attackers!`
+                        }});
+                      }
+                      if (warResults.attackScores[i].attacks === 0) { // Player did not attack
+                        client.users.cache.get(tagToID[warResults.attackScores[i].tag]).send({embed: {
+                          color: 16777215,
+                          description: `You forgot to attack in war! Please opt out if you will be unable to attack in the next war.`
+                        }});
+                      }
                     }
                   }
-                }
-              });
+                });
+              }
             }
           break;
         }
