@@ -457,6 +457,7 @@ function quicksort(arr, lo, hi, by) {
 }
 
 function convertToValidDate(cocDate) {
+  console.log(cocDate);
   var year = cocDate.substring(0, 4);
   var month = cocDate.substring(4, 6);
   var day = cocDate.substring(6, 8);
@@ -771,6 +772,7 @@ setInterval(function() {
             }
           break;
           case "warEnded":
+            console.log(warData);
             var warEndTime = new Date(convertToValidDate(warData.endTime)).getTime();
             var curTime = new Date().getTime();
             if (!warNotifs["4_warEnd"] && curTime >= warEndTime + (4 * 60 * 1000)) { // War has ended
