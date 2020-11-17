@@ -15,16 +15,8 @@ const firebaseConfig = {
   messagingSenderId: "461874496304",
   appId: "1:461874496304:web:1375790da9e30654547ef5"
 };
-<<<<<<< Updated upstream
-// const serviceAccount = require("serviceKey.json");
-// Initialize Firebase
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  databaseURL: "https://ss-fluffy-bot.firebaseio.com"
-});
-// firebase.initializeApp(firebaseConfig);
-let database = admin.database();
-=======
+firebase.initializeApp(firebaseConfig);
+// let database = admin.database();
 // const serviceAccount = require("key.json");
 // Initialize Firebase
 // admin.initializeApp({
@@ -33,7 +25,6 @@ let database = admin.database();
 // });
 firebase.initializeApp(firebaseConfig);
 let database = firebase.database();
->>>>>>> Stashed changes
 let ref = {
   users: database.ref("users"),
   time: database.ref("time"),
