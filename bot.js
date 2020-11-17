@@ -30,6 +30,10 @@ let ref = {
   warNotifs: database.ref("warNotifs"),
   warHistory: database.ref("warHistory")
 };
+ref.users.once("value", function(data) {
+  let d = data.val();
+  console.log(d);
+});
 
 // Setup Request:
 const request = require("request");
