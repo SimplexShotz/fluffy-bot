@@ -15,7 +15,7 @@ const firebaseConfig = {
   messagingSenderId: "461874496304",
   appId: "1:461874496304:web:1375790da9e30654547ef5"
 };
-const serviceAccount = require("serviceKey.json");
+// const serviceAccount = require("serviceKey.json");
 // Initialize Firebase
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
