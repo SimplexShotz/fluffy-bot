@@ -5,6 +5,7 @@ const client = new Discord.Client({disableEveryone: false});
 
 // Setup Firebase:
 const firebase = require("firebase");
+const admin = require('firebase-admin');
 const firebaseConfig = {
   apiKey: "AIzaSyBgfiB26cap_PUCxwqIa8m0xPDqtrfXt5Q",
   authDomain: "ss-fluffy-bot.firebaseapp.com",
@@ -14,7 +15,12 @@ const firebaseConfig = {
   messagingSenderId: "461874496304",
   appId: "1:461874496304:web:1375790da9e30654547ef5"
 };
+const serviceAccount = require("serviceKey.json");
 // Initialize Firebase
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://ss-fluffy-bot.firebaseio.com"
+});
 firebase.initializeApp(firebaseConfig);
 let database = firebase.database();
 let ref = {
