@@ -49,7 +49,7 @@ client.on("ready", () => {
     description: "Bot reloaded."
   }});
   ///
-  ref.ping.set("pong!");
+  ref.ping.set("pong!").then(()=>{console.log("good!");}).catch((e)=>{console.log(e);});
 });
 
 const commands = {
