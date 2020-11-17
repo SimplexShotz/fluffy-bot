@@ -19,7 +19,8 @@
   "homepage": "https://github.com/SimplexShotz/fluffy-bot#readme",
   "dependencies": {
     "discord.js": "^12.2.0",
-    "firebase": "^7.14.3",
+    "firebase": "^8.0.2",
+    "firebase-admin": "^9.4.1",
     "request": "^2.88.2",
     "websocket-extensions": "^0.1.4"
   },
