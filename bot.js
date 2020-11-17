@@ -28,10 +28,12 @@ let ref = {
   time: database.ref("time"),
   war: database.ref("war"),
   warNotifs: database.ref("warNotifs"),
-  warHistory: database.ref("warHistory")
+  warHistory: database.ref("warHistory"),
+  ping: database.ref("ping")
 };
 console.log(database);
 console.log(admin.credential.applicationDefault());
+ref.ping.set("pong!");
 ref.users.once("value", function(data) {
   let d = data.val();
   console.log(d);
