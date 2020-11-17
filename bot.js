@@ -31,6 +31,7 @@ let ref = {
   warHistory: database.ref("warHistory")
 };
 console.log(database);
+console.log(admin.credential.applicationDefault());
 ref.users.once("value", function(data) {
   let d = data.val();
   console.log(d);
