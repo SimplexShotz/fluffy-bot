@@ -5,7 +5,7 @@ const client = new Discord.Client({disableEveryone: false});
 
 // Setup Firebase:
 const firebase = require("firebase");
-const admin = require('firebase-admin');
+// const admin = require('firebase-admin');
 const firebaseConfig = {
   apiKey: "AIzaSyBgfiB26cap_PUCxwqIa8m0xPDqtrfXt5Q",
   authDomain: "ss-fluffy-bot.firebaseapp.com",
@@ -15,6 +15,7 @@ const firebaseConfig = {
   messagingSenderId: "461874496304",
   appId: "1:461874496304:web:1375790da9e30654547ef5"
 };
+<<<<<<< Updated upstream
 // const serviceAccount = require("serviceKey.json");
 // Initialize Firebase
 admin.initializeApp({
@@ -23,6 +24,16 @@ admin.initializeApp({
 });
 // firebase.initializeApp(firebaseConfig);
 let database = admin.database();
+=======
+// const serviceAccount = require("key.json");
+// Initialize Firebase
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   databaseURL: "https://ss-fluffy-bot.firebaseio.com"
+// });
+firebase.initializeApp(firebaseConfig);
+let database = firebase.database();
+>>>>>>> Stashed changes
 let ref = {
   users: database.ref("users"),
   time: database.ref("time"),
@@ -31,12 +42,12 @@ let ref = {
   warHistory: database.ref("warHistory"),
   ping: database.ref("ping")
 };
-console.log(database);
-console.log(admin.credential.applicationDefault());
-ref.users.once("value", function(data) {
-  let d = data.val();
-  console.log(d);
-});
+// console.log(database);
+// console.log(admin.credential.applicationDefault());
+// ref.users.once("value", function(data) {
+//   let d = data.val();
+//   console.log(d);
+// });
 
 // Setup Request:
 const request = require("request");
