@@ -21,8 +21,8 @@ admin.initializeApp({
   credential: admin.credential.applicationDefault(),
   databaseURL: "https://ss-fluffy-bot.firebaseio.com"
 });
-firebase.initializeApp(firebaseConfig);
-let database = firebase.database();
+// firebase.initializeApp(firebaseConfig);
+let database = admin.database();
 let ref = {
   users: database.ref("users"),
   time: database.ref("time"),
