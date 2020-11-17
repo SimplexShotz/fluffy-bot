@@ -48,6 +48,7 @@ client.on("ready", () => {
     color: 16777215,
     description: "Bot reloaded."
   }});
+  ///
   ref.ping.set("pong!");
 });
 
