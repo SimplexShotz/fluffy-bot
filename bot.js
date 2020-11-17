@@ -18,7 +18,7 @@ const firebaseConfig = {
 const serviceAccount = require("serviceKey.json");
 // Initialize Firebase
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.applicationDefault(),
   databaseURL: "https://ss-fluffy-bot.firebaseio.com"
 });
 firebase.initializeApp(firebaseConfig);
