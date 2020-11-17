@@ -33,7 +33,6 @@ let ref = {
 };
 console.log(database);
 console.log(admin.credential.applicationDefault());
-await ref.ping.set("pong!");
 ref.users.once("value", function(data) {
   let d = data.val();
   console.log(d);
@@ -49,6 +48,7 @@ client.on("ready", () => {
     color: 16777215,
     description: "Bot reloaded."
   }});
+  ref.ping.set("pong!");
 });
 
 const commands = {
