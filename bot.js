@@ -738,7 +738,7 @@ setInterval(function() {
                 const hasToAttack = getAttacksLeft(warData, userData);
 
                 if (hasToAttack.length !== 0) { // Attacks are left
-                  let pingText = "<@!" + hasToAttack.join("><@!") + ">";
+                  let pingText = "<@" + hasToAttack.join("><@") + ">";
                   // Send message:
                   client.channels.cache.get("709784763858288681").send({embed: {
                     color: 16777215,
@@ -764,7 +764,7 @@ setInterval(function() {
                 const hasToAttack = getAttacksLeft(warData, userData);
 
                 if (hasToAttack.length !== 0) { // Attacks are left
-                  let pingText = "<@!" + hasToAttack.join("><@!") + ">";
+                  let pingText = "<@" + hasToAttack.join("><@") + ">";
                   // Send message:
                   client.channels.cache.get("709784763858288681").send({embed: {
                     color: 16777215,
